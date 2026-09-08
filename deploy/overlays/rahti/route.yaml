@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: cyberwatch
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
+spec:
+  # Let the router allocate a unique cluster hostname with its wildcard cert.
+  to:
+    kind: Service
+    name: cyberwatch
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

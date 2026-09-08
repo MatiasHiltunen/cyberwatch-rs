@@ -1,0 +1,139 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  publish:
+    needs: checks
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build candidate
+        id: candidate
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          image="ghcr.io/${REPOSITORY,,}"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          docker build --platform linux/amd64 --tag "$image:$GITHUB_SHA" .
+          docker build --platform linux/amd64 --target maintenance --tag "${image}-maintenance:$GITHUB_SHA" .
+          mkdir -p reports
+          python3 tools/runtime_artifact.py --image "$image:$GITHUB_SHA" --output-dir dist
+          cp dist/runtime-size.json reports/runtime-size.json
+      - name: Scan exact image before publication
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.74.0
+          image-ref: ${{ steps.candidate.outputs.image }}:${{ github.sha }}
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: json
+          output: reports/release-security.json
+      - name: Scan maintenance image before publication
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.74.0
+          image-ref: ${{ steps.candidate.outputs.image }}-maintenance:${{ github.sha }}
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: json
+          output: reports/maintenance-security.json
+      - name: Smoke-test the exact candidate to be published
+        env:
+          IMAGE: ${{ steps.candidate.outputs.image }}
+        run: |
+          docker run -d --name cyberwatch-release --read-only --cap-drop ALL --security-opt no-new-privileges:true --memory 768m --cpus 1 --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16m --mount type=volume,dst=/app/data -p 127.0.0.1:8080:8080 -e DEMO_MODE=true -e ADMIN_TOKEN="$(openssl rand -hex 32)" "$IMAGE:$GITHUB_SHA"
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/ready; then break; fi
+            sleep 1
+          done
+          python3 tools/smoke.py --url http://127.0.0.1:8080 --output reports/release-smoke.json
+          docker exec cyberwatch-release /usr/local/bin/cyberwatch-rs --healthcheck
+          docker stop cyberwatch-release
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --volumes-from cyberwatch-release "${IMAGE}-maintenance:$GITHUB_SHA" backup /app/data/cyberwatch.db /app/data/release-backup.db
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --volumes-from cyberwatch-release "${IMAGE}-maintenance:$GITHUB_SHA" restore /app/data/release-backup.db /app/data/release-restored.db --app-stopped
+          docker run -d --name cyberwatch-restored-release --read-only --cap-drop ALL --security-opt no-new-privileges:true --memory 768m --cpus 1 --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16m --volumes-from cyberwatch-release -p 127.0.0.1:8080:8080 -e DEMO_MODE=true -e REFRESH_ENABLED=false -e DATABASE_PATH=/app/data/release-restored.db -e ADMIN_TOKEN="$(openssl rand -hex 32)" "$IMAGE:$GITHUB_SHA"
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/ready; then break; fi
+            sleep 1
+          done
+          python3 tools/smoke.py --url http://127.0.0.1:8080 --output reports/release-restored-smoke.json
+          docker exec cyberwatch-restored-release /usr/local/bin/cyberwatch-rs --healthcheck
+          docker stop cyberwatch-restored-release
+      - name: Publish scanned and tested candidate and record immutable digest
+        id: publish
+        env:
+          IMAGE: ${{ steps.candidate.outputs.image }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          trivy image --format cyclonedx --output reports/release-sbom.cdx.json "$IMAGE:$GITHUB_SHA"
+          trivy image --format cyclonedx --output reports/maintenance-sbom.cdx.json "${IMAGE}-maintenance:$GITHUB_SHA"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$REGISTRY_USER" --password-stdin
+          docker push "$IMAGE:$GITHUB_SHA"
+          docker push "${IMAGE}-maintenance:$GITHUB_SHA"
+          reference=$(docker inspect --format '{{index .RepoDigests 0}}' "$IMAGE:$GITHUB_SHA")
+          echo "digest=${reference##*@}" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$reference" > reports/image-reference.txt
+          maintenance=$(docker inspect --format '{{index .RepoDigests 0}}' "${IMAGE}-maintenance:$GITHUB_SHA")
+          echo "maintenance-digest=${maintenance##*@}" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$maintenance" > reports/maintenance-image-reference.txt
+          printf 'Verified source commit: `%s`\n\nImage: `%s`\n\nMaintenance image: `%s`\n' "$GITHUB_SHA" "$reference" "$maintenance" >> "$GITHUB_STEP_SUMMARY"
+      - name: Attest image provenance with short-lived GitHub identity
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.candidate.outputs.image }}
+          subject-digest: ${{ steps.publish.outputs.digest }}
+          push-to-registry: true
+      - name: Attest maintenance image from the same source revision
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ steps.candidate.outputs.image }}-maintenance
+          subject-digest: ${{ steps.publish.outputs.maintenance-digest }}
+          push-to-registry: true
+      - name: Attest the minimal runtime archive
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*.tar.gz
+      - run: docker logout ghcr.io
+        if: always()
+      - name: Capture recovery logs and remove disposable containers and volumes
+        run: |
+          docker logs cyberwatch-release > reports/release-container.log 2>&1 || true
+          docker logs cyberwatch-restored-release > reports/release-restored-container.log 2>&1 || true
+          docker rm -fv cyberwatch-restored-release cyberwatch-release || true
+        if: always()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: release-evidence
+          path: reports/
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-runtime-linux-amd64
+          path: dist/
+          compression-level: 0
+          retention-days: 30

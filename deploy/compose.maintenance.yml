@@ -1,0 +1,22 @@
+# Combine with docker-compose.yml, keeping the same -p and live override, if any.
+# Stop cyberwatch before starting this optional, network-isolated recovery tool.
+services:
+  maintenance:
+    profiles: [maintenance]
+    build:
+      context: .
+      target: maintenance
+    image: ${MAINTENANCE_IMAGE:-cyberwatch-rs-maintenance:local}
+    restart: "no"
+    init: true
+    read_only: true
+    network_mode: none
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    cpus: 1.0
+    mem_limit: 256m
+    volumes:
+      - cyberwatch-data:/app/data
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777

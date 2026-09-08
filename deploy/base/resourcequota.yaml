@@ -1,0 +1,16 @@
+# Apply only in a dedicated example namespace: this quota affects ALL its pods.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: cyberwatch-budget
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    requests.storage: 2Gi
+    persistentvolumeclaims: "1"
+    pods: "3"
+    services.loadbalancers: "0"
+    services.nodeports: "0"

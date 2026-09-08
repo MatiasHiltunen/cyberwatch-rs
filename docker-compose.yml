@@ -1,0 +1,45 @@
+services:
+  cyberwatch:
+    build: .
+    image: cyberwatch-rs:local
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    cpus: 1.0
+    mem_limit: 768m
+    mem_reservation: 256m
+    stop_grace_period: 30s
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - cyberwatch-data:/app/data
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    secrets:
+      - source: admin-token
+        target: admin-token
+    environment:
+      BIND_ADDRESS: 0.0.0.0:8080
+      DATABASE_PATH: ${DATABASE_PATH:-/app/data/cyberwatch.db}
+      WEB_DIR: /app/web
+      ADMIN_TOKEN_FILE: /run/secrets/admin-token
+      DEMO_MODE: ${DEMO_MODE:-true}
+      REFRESH_INTERVAL_SECONDS: ${REFRESH_INTERVAL_SECONDS:-900}
+      SOURCE_CONCURRENCY: 4
+      VALIDATION_CONCURRENCY: 4
+      MAX_SOURCE_RESPONSE_BYTES: 8388608
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  cyberwatch-data:
+
+secrets:
+  admin-token:
+    file: ./secrets/admin-token

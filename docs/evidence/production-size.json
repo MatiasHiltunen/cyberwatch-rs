@@ -1,0 +1,90 @@
+{
+  "measured_at_utc": "2026-09-08T08:10:25.824355+00:00",
+  "platform": "linux/arm64",
+  "docker_version": "29.5.2",
+  "rust_version": "1.88.0",
+  "before": {
+    "image_id": "sha256:7e445a04aae2cbab4439dd345313fbf01c455552178a3b3dbd098133ad12d54a",
+    "image_bytes": 51735031,
+    "rootfs_tar_bytes": 163964928,
+    "binary_bytes": 11894000
+  },
+  "after": {
+    "image_id": "sha256:8335ecffc98aa1fbfa1b8ff7837f17c0bd0f25c40fb24fd011d2bc84ce47f36f",
+    "platform": "linux/arm64",
+    "image_bytes": 12699998,
+    "binary_bytes": 7372064,
+    "rootfs_tar_bytes": 42874368,
+    "size_semantics": "image_bytes is Docker's engine-dependent Size; rootfs_tar_bytes is the uncompressed exported filesystem including tar metadata",
+    "runtime_archive_bytes": 3514179,
+    "runtime_archive_sha256": "8bdf0abbdee3375bf25bd97197c17a68a5d225c01a85148a7248f87e48120c32",
+    "runtime_files": [
+      "LICENSE",
+      "cyberwatch-rs",
+      "web/app.js",
+      "web/index.html",
+      "web/styles.css"
+    ],
+    "limits": {
+      "image_max_bytes": 50331648,
+      "rootfs_tar_max_bytes": 50331648,
+      "binary_max_bytes": 10485760,
+      "archive_max_bytes": 6291456
+    },
+    "status": "passed"
+  },
+  "reductions_percent": {
+    "rootfs_tar": 73.85,
+    "image_size_same_engine": 75.45,
+    "binary": 38.02
+  },
+  "windows_arm64": {
+    "before_binary_bytes": 11949056,
+    "after_binary_bytes": 7590912,
+    "reduction_percent": 36.47,
+    "validation": {
+      "cargo_fmt": "passed",
+      "cargo_test_release_all_targets": "passed: 35 tests (25 library, 3 probe unit, 2 readiness CLI integration, 5 HTTP integration)",
+      "cargo_clippy_release_all_targets_deny_warnings": "passed"
+    }
+  },
+  "production_build_input_sha256": {
+    "Dockerfile": "2018ebd4f844d1bbf6f0789e98bb4492bd969ad0e989f32697f2e7b893a2a813",
+    ".dockerignore": "0ebe0f222f617596a6a9087d2d818c83a6cbe639aa6c5cba1d424aa36a2399d5",
+    "Cargo.toml": "0820244cfa4017b8a468ed3406a6598600ffef02e17ebe6ee751b8006c220492",
+    "Cargo.lock": "a79d003e4754c08ba124582b88fe9cf423f67bde43a5e8179a9e8aa430d0860b",
+    "rust-toolchain.toml": "6a3177dca3783745b00765ea571974808dad2644947fc0a8df5927048edf13a5",
+    "sources.default.json": "d3f1d1edce64177bc500244940e3414769e9d5d49896bdcc1b2eb8052cb57045",
+    "LICENSE": "d492ab0cadfe250136f092decab8355349a36da67ac6e22853522f8ae190d031",
+    "src/api.rs": "084e7ec27b78e9b4eeff6bd25e20e0c20c08658240b9979dc1811175f45d5b89",
+    "src/classifier.rs": "2afdee8218fbe54a66c9d39fb20ed02b4a1173e7911a054c14052ad45e641c3e",
+    "src/config.rs": "ef955ac228c2a0880f9f41320b86e65f1b318a86bd153aaac3f1c2ffc2511d4b",
+    "src/db.rs": "ed2a608e544681e3629c2ca05fbdc3b72b87af3c20ac91d64004022ac73ef454",
+    "src/demo.rs": "7293b43f9e2e9951b2ec04dd405b80c5d74bc59f8315aec187baa118414d570e",
+    "src/healthcheck.rs": "4dbe5f718d7750bc7fe9326a7421f5c297c875c1b91551b85106c73c4652fe6b",
+    "src/ingest/cisa.rs": "a3270fea3f7adad0562bb7823f0ba21b9f04890d82cc6a91cd3d16060001e09b",
+    "src/ingest/epss.rs": "ff7588342f52118c108519116a660f73b5d141a2199187138e453c98725e1192",
+    "src/ingest/feeds.rs": "2a9100edb7ea4877fe339711b43867c309a1002a6d7464c6af43254887c16710",
+    "src/ingest/github.rs": "007b1672520b920d9711631c76f07f4ea7c4e289196e4534343aa36144e1bdbf",
+    "src/ingest/http.rs": "0286d5805588d3a1877f0569ce3389311c6c4fc0a8f8a96fdde608e0a1de44ad",
+    "src/ingest/mod.rs": "194ef5e5ff09cedc60f6466733e460f0bf01a5a2548f3c82b8e0a1ebebeb7686",
+    "src/ingest/nvd.rs": "6ee4295e49b2d00cb9b1f0bcc1e3fd21bf414adbc8a59afc83e77fe2eb094267",
+    "src/ingest/source.rs": "7ea156b88b9d28661365edd1a5b6b61a9cc2c02f24f537934e03c97044a6c50f",
+    "src/ingest/validate.rs": "f443a224361a19674057fff86a3181172b452e6d16ea5e6831d69b14ecda8277",
+    "src/lib.rs": "28ffe0a2ece5af831a1bb1cc7267af2107ab04c7fa6038bf6b0e498f151410a9",
+    "src/main.rs": "8d90fee87ea46a0cc230e5b5f0ab487db71693a0559ee502b93dd2c3a10510f9",
+    "src/models.rs": "0f717e8e8e5f9b0b881a145f4fc9b8345d5205d5916029adfb44c6359fcea3b5",
+    "src/refresh.rs": "12f234baca4c4a04e662e3b8662d7010bdfd2e72369e1777531640a0c2d0fdbc",
+    "src/schema.sql": "b02ab8abafec5949dcbf18f8b34b7513512a74319a1a180361fcecef852fa932",
+    "web/index.html": "90fcc968c13c1f2d7e8aefcf752346a3703d41b79d59dc81f68763ab27cc0b63",
+    "web/app.js": "e8791b23f38749cec5c989b857f8f00dfc7bc9e5e2513cb8572378ab719ea7be",
+    "web/styles.css": "5f629e55c13066964d65b9690f0dab2a696f6cb443f637e0c64e3f6d07d3bdc5"
+  },
+  "notes": [
+    "Same engine and native ARM64 platform used for both container builds.",
+    "Docker Size semantics depend on image store; rootfs_tar_bytes includes uncompressed filesystem and tar metadata.",
+    "Excluded from serving-image measurement: persistent data, compiler cache, optional maintenance image, and development image.",
+    "Local build used --network host for dependency downloads after bridge-network timeouts.",
+    "Linux AMD64 CI is configured but not executed locally."
+  ]
+}

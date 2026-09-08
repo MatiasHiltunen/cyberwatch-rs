@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+  - storage.yaml
+  - serviceaccount.yaml
+  - networkpolicy.yaml
+  - resourcequota.yaml
+configMapGenerator:
+  - name: cyberwatch-config
+    literals:
+      - DEMO_MODE=true
+      - BIND_ADDRESS=0.0.0.0:8080
+      - DATABASE_PATH=/app/data/cyberwatch.db
+      - WEB_DIR=/app/web
+      - ADMIN_TOKEN_FILE=/run/secrets/admin-token
+      - REFRESH_INTERVAL_SECONDS=900
+      - SOURCE_CONCURRENCY=4
+      - VALIDATION_CONCURRENCY=4
+      - MAX_SOURCE_RESPONSE_BYTES=8388608

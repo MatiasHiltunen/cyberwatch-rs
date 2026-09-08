@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "archive": "cyberwatch-rs-linux-arm64.tar.gz",
+  "archive_sha256": "8bdf0abbdee3375bf25bd97197c17a68a5d225c01a85148a7248f87e48120c32",
+  "compatible_library_image_id": "sha256:8335ecffc98aa1fbfa1b8ff7837f17c0bd0f25c40fb24fd011d2bc84ce47f36f",
+  "platform": "linux/arm64",
+  "entrypoint": "/opt/archive/cyberwatch-rs/cyberwatch-rs",
+  "web_dir": "/opt/archive/cyberwatch-rs/web",
+  "user": "10001:0",
+  "read_only_rootfs": true,
+  "read_only_archive_volume": true,
+  "dropped_capabilities": [
+    "ALL"
+  ],
+  "smoke": {
+    "status": "passed",
+    "checks": [
+      "GET /health: 200",
+      "GET /ready: 200",
+      "GET /: 200",
+      "GET /api/v1/items?limit=1: 200",
+      "GET /api/v1/items?limit=1&cursor=eyJ0aW1lc3RhbXAiOiIyMDI2LTA5LTAxVDEyOjAwOjAwWiIsImlkIjoiZGVtbzpuZXdzOnBhdGNoIn0: 200",
+      "GET /api/v1/items/demo%3Anews%3Apatch: 200",
+      "GET /api/v1/items?kind=cve: 200",
+      "GET /api/v1/stats: 200",
+      "GET /api/v1/sources: 200",
+      "GET /api/v1/items?kind=invalid: 400",
+      "GET /api/v1/items?cursor=invalid: 400",
+      "GET /api/v1/does-not-exist: 404",
+      "POST /api/v1/refresh: 503",
+      "GET /metrics: 200"
+    ],
+    "health": {
+      "demo_mode": true,
+      "refresh_enabled": false,
+      "status": "ok",
+      "version": "0.4.1"
+    }
+  },
+  "archive_executable_healthcheck": "passed"
+}

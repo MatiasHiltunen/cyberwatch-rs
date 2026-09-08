@@ -1,0 +1,90 @@
+{
+  "platform": "linux/arm64",
+  "image_id": "sha256:8335ecffc98aa1fbfa1b8ff7837f17c0bd0f25c40fb24fd011d2bc84ce47f36f",
+  "maintenance_image_id": "sha256:187a1f0a9acf3b8d017c7fbe63094a3789ac24fc722f4508cb05f8b0a109793e",
+  "status": "passed",
+  "checks": [
+    {
+      "scenario": "demo",
+      "uid": "10001:0",
+      "http_smoke": {
+        "status": "passed",
+        "checks": [
+          "GET /health: 200",
+          "GET /ready: 200",
+          "GET /: 200",
+          "GET /api/v1/items?limit=1: 200",
+          "GET /api/v1/items?limit=1&cursor=eyJ0aW1lc3RhbXAiOiIyMDI2LTA5LTAxVDEyOjAwOjAwWiIsImlkIjoiZGVtbzpuZXdzOnBhdGNoIn0: 200",
+          "GET /api/v1/items/demo%3Anews%3Apatch: 200",
+          "GET /api/v1/items?kind=cve: 200",
+          "GET /api/v1/stats: 200",
+          "GET /api/v1/sources: 200",
+          "GET /api/v1/items?kind=invalid: 400",
+          "GET /api/v1/items?cursor=invalid: 400",
+          "GET /api/v1/does-not-exist: 404",
+          "POST /api/v1/refresh: 503",
+          "GET /metrics: 200"
+        ],
+        "health": {
+          "demo_mode": true,
+          "refresh_enabled": false,
+          "status": "ok",
+          "version": "0.4.1"
+        }
+      }
+    },
+    {
+      "scenario": "demo gzip negotiation",
+      "status": "passed"
+    },
+    {
+      "scenario": "Docker scheduled healthcheck",
+      "status": "passed"
+    },
+    {
+      "scenario": "offline maintenance backup/verify/restore as arbitrary UID",
+      "status": "passed"
+    },
+    {
+      "scenario": "restored",
+      "uid": "1000642000:0",
+      "http_smoke": {
+        "status": "passed",
+        "checks": [
+          "GET /health: 200",
+          "GET /ready: 200",
+          "GET /: 200",
+          "GET /api/v1/items?limit=1: 200",
+          "GET /api/v1/items?limit=1&cursor=eyJ0aW1lc3RhbXAiOiIyMDI2LTA5LTAxVDEyOjAwOjAwWiIsImlkIjoiZGVtbzpuZXdzOnBhdGNoIn0: 200",
+          "GET /api/v1/items/demo%3Anews%3Apatch: 200",
+          "GET /api/v1/items?kind=cve: 200",
+          "GET /api/v1/stats: 200",
+          "GET /api/v1/sources: 200",
+          "GET /api/v1/items?kind=invalid: 400",
+          "GET /api/v1/items?cursor=invalid: 400",
+          "GET /api/v1/does-not-exist: 404",
+          "POST /api/v1/refresh: 503",
+          "GET /metrics: 200"
+        ],
+        "health": {
+          "demo_mode": true,
+          "refresh_enabled": false,
+          "status": "ok",
+          "version": "0.4.1"
+        }
+      }
+    },
+    {
+      "scenario": "restored gzip negotiation",
+      "status": "passed"
+    },
+    {
+      "scenario": "unique non-demo recovery marker survives restored application startup",
+      "status": "passed"
+    },
+    {
+      "scenario": "healthcheck without listener fails without database/secret configuration",
+      "status": "passed"
+    }
+  ]
+}

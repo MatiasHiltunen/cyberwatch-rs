@@ -1,0 +1,52 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Full attested ghcr.io/owner/repo@sha256 digest from Release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-course-environment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    environment: course-staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      attestations: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Use the namespace-scoped credential and verify provenance before deployment
+        env:
+          IMAGE: ${{ inputs.image }}
+          NAMESPACE: ${{ vars.KUBE_NAMESPACE }}
+          REPOSITORY: ${{ github.repository }}
+          KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
+          GH_TOKEN: ${{ github.token }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: |
+          umask 077
+          export KUBECONFIG="$RUNNER_TEMP/cyberwatch-kubeconfig"
+          trap 'rm -f "$KUBECONFIG"; docker logout ghcr.io' EXIT
+          printf '%s' "$KUBE_CONFIG_B64" | base64 --decode > "$KUBECONFIG"
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$REGISTRY_USER" --password-stdin
+          python3 tools/deploy.py --image "$IMAGE" --namespace "$NAMESPACE" --repository "$REPOSITORY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: deployment-evidence
+          path: reports/deployment.json
+          retention-days: 30

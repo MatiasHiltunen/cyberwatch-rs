@@ -1,0 +1,27 @@
+groups:
+  - name: cyberwatch
+    rules:
+      - alert: CyberwatchUnavailable
+        expr: up{job="cyberwatch"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Cyberwatch has not answered metrics scrapes for one minute
+          runbook: docs/operations.md
+      - alert: CyberwatchApiErrors
+        expr: sum(rate(cyberwatch_http_requests_total{route=~"/api/.*",status_class="5xx"}[5m])) / clamp_min(sum(rate(cyberwatch_http_requests_total{route=~"/api/.*"}[5m])), 0.001) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: More than five percent of API responses failed for two minutes
+          runbook: docs/operations.md
+      - alert: CyberwatchApiSlow
+        expr: histogram_quantile(0.95, sum by (le) (rate(cyberwatch_http_request_duration_seconds_bucket{route=~"/api/.*"}[5m]))) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: API handler p95 latency exceeds the example 500ms objective
+          runbook: docs/operations.md

@@ -1,0 +1,4 @@
+# Rule ID, gate, reason. Other baseline warnings remain visible in reports (-I).
+10038	FAIL	Missing Content Security Policy
+10021	FAIL	Missing X-Content-Type-Options
+10020	FAIL	Missing anti-framing protection

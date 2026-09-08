@@ -1,0 +1,154 @@
+{
+  "recorded_at_utc": "2026-09-08T08:10:56.493567+00:00",
+  "scanner": {
+    "name": "Trivy",
+    "version": "0.74.0",
+    "image": "aquasec/trivy@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969",
+    "database": {
+      "Version": 2,
+      "NextUpdate": "2026-09-09T01:14:11.072075403Z",
+      "UpdatedAt": "2026-09-08T01:14:11.072075664Z",
+      "DownloadedAt": "2026-09-08T07:59:07.833460087Z"
+    }
+  },
+  "severity_gate": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "source_scanners": [
+    "vuln",
+    "secret",
+    "misconfig"
+  ],
+  "image_scanners": [
+    "vuln",
+    "secret"
+  ],
+  "scope_exclusions": {
+    "directories": [
+      "target",
+      ".git",
+      ".ci-venv",
+      "reports",
+      "dist"
+    ],
+    "generated_evidence_patterns": [
+      "docs/evidence/*-security-scan.json",
+      "docs/evidence/*sbom*.json",
+      "docs/evidence/security-verification.json"
+    ]
+  },
+  "results": {
+    "source": {
+      "status": "passed",
+      "scanner_exit_code": 0,
+      "scanned_at_utc": "2026-09-08T08:08:40.693480534Z",
+      "report": "source-security-scan.json",
+      "report_sha256": "56787c55fc733c721786a33ebf4d499bc4de38c32066cddc879bcee4dbb31095",
+      "findings_at_selected_severities": {
+        "vulnerabilities": 0,
+        "secrets": 0,
+        "misconfigurations": 0
+      },
+      "sbom": "source-sbom.cdx.json",
+      "sbom_sha256": "8eccb7000b56f2ca729b60dc38aa57e0018b5406829d82e0aaeced97334a7f5d",
+      "sbom_components": 250
+    },
+    "production": {
+      "status": "passed",
+      "scanner_exit_code": 0,
+      "scanned_at_utc": "2026-09-08T08:09:53.933903144Z",
+      "report": "production-security-scan.json",
+      "report_sha256": "547f1a18feff0de2a6f783f999010e73da0b80b24b85fd8e92d53aee113a547f",
+      "findings_at_selected_severities": {
+        "vulnerabilities": 0,
+        "secrets": 0,
+        "misconfigurations": 0
+      },
+      "sbom": "production-sbom.cdx.json",
+      "sbom_sha256": "13a19febe510a387cc5a1b50244f85e67052178aec08ae57d2c842cf68d2281f",
+      "sbom_components": 12,
+      "image_id": "sha256:8335ecffc98aa1fbfa1b8ff7837f17c0bd0f25c40fb24fd011d2bc84ce47f36f",
+      "platform": "linux/arm64"
+    },
+    "maintenance": {
+      "status": "passed",
+      "scanner_exit_code": 0,
+      "scanned_at_utc": "2026-09-08T08:07:22.143393974Z",
+      "report": "maintenance-security-scan.json",
+      "report_sha256": "6b03fa60324973532e2ac19df15e15e78661a428df29123622b55cdbdfe41d24",
+      "findings_at_selected_severities": {
+        "vulnerabilities": 0,
+        "secrets": 0,
+        "misconfigurations": 0
+      },
+      "sbom": "maintenance-sbom.cdx.json",
+      "sbom_sha256": "fb572072800102cb2acd58134b6d7df06be913ffd9d91a4b617ff955312757e0",
+      "sbom_components": 30,
+      "image_id": "sha256:187a1f0a9acf3b8d017c7fbe63094a3789ac24fc722f4508cb05f8b0a109793e",
+      "platform": "linux/arm64"
+    }
+  },
+  "build_input_sha256": {
+    "Cargo.toml": "0820244cfa4017b8a468ed3406a6598600ffef02e17ebe6ee751b8006c220492",
+    "Cargo.lock": "a79d003e4754c08ba124582b88fe9cf423f67bde43a5e8179a9e8aa430d0860b",
+    "Dockerfile": "2018ebd4f844d1bbf6f0789e98bb4492bd969ad0e989f32697f2e7b893a2a813",
+    "rust-toolchain.toml": "6a3177dca3783745b00765ea571974808dad2644947fc0a8df5927048edf13a5",
+    "tools/backup.py": "ac5c5ffe94348d55bb52d1e82460866f2d5c56c88617409e855aafa3cc0dc09b"
+  },
+  "maintenance": {
+    "base": "python:3.13-alpine@sha256:7415fbc3c9e4979cc717d92377ab2bc7b2b4a2af1ac03cc52b5f3f88efedaf3a",
+    "security_package": "libuuid=2.42.3-r1",
+    "removed_tools": [
+      "pip",
+      "ensurepip",
+      "setuptools",
+      "pkg_resources"
+    ],
+    "python": "3.13.15",
+    "sqlite": "3.53.4",
+    "image_bytes_engine_dependent": 20366478,
+    "recovery_tests": {
+      "status": "passed",
+      "tests": 9,
+      "environment": "Final maintenance image, read-only, no network, dropped capabilities, temporary /tmp only"
+    }
+  },
+  "resolved_attempts": [
+    {
+      "stage": "initial scanner database download",
+      "result": "failed before scanning",
+      "reason": "Direct container network refused; retry through Docker Desktop outbound proxy downloaded the current database."
+    },
+    {
+      "stage": "Bookworm maintenance candidate",
+      "result": "failed",
+      "high": 57,
+      "critical": 5
+    },
+    {
+      "stage": "Trixie maintenance candidate without pip",
+      "result": "failed",
+      "high": 51,
+      "critical": 3
+    },
+    {
+      "stage": "Alpine maintenance candidate before libuuid patch",
+      "result": "failed",
+      "high": 7,
+      "critical": 0
+    },
+    {
+      "stage": "Final Alpine maintenance candidate with pinned libuuid patch",
+      "result": "passed",
+      "high": 0,
+      "critical": 0
+    }
+  ],
+  "limits": [
+    "Evidence covers local Linux ARM64 images; CI must scan the separately built AMD64 publication candidates.",
+    "Image SBOMs inventory detected operating-system packages. The source SBOM and source SCA complement them with Cargo dependencies; stripped Rust binaries are not independently inventoried by this image scanner.",
+    "Zero selected-severity findings is not a guarantee of security; lower severities were outside this gate and scanner/database coverage has limits.",
+    "Trivy 0.74.0 warned that Alpine 3.24 is absent from its built-in EOL list; Alpine upstream lists v3.24 supported through 2028-06-01 (https://alpinelinux.org/releases/). No finding was ignored or reclassified."
+  ]
+}

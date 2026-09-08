@@ -1,0 +1,27 @@
+{
+  "include_defaults": true,
+  "feeds": [
+    {
+      "id": "national-cert",
+      "name": "National CERT",
+      "url": "https://cert.example/feed.xml",
+      "region": "Europe",
+      "language": "en",
+      "trust": 3,
+      "role": "official-advisory",
+      "enabled": true,
+      "timeout_seconds": 45,
+      "retry_attempts": 3
+    },
+    {
+      "id": "dark-reading",
+      "name": "Dark Reading",
+      "url": "https://www.darkreading.com/rss.xml",
+      "region": "Global",
+      "language": "en",
+      "trust": 1,
+      "role": "media",
+      "enabled": false
+    }
+  ]
+}

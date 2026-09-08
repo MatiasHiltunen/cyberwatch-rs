@@ -1,0 +1,47 @@
+# Temporary recovery pod. Stop the Deployment before attaching the PVC here.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cyberwatch-maintenance
+  labels:
+    app.kubernetes.io/name: cyberwatch
+    app.kubernetes.io/component: maintenance
+spec:
+  serviceAccountName: cyberwatch
+  automountServiceAccountToken: false
+  enableServiceLinks: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 3600
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: maintenance
+      image: cyberwatch-rs-maintenance:local
+      imagePullPolicy: IfNotPresent
+      command: [python3, -c, "import time; time.sleep(3600)"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: [ALL]
+      resources:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: "1"
+          memory: 256Mi
+      volumeMounts:
+        - name: data
+          mountPath: /app/data
+        - name: temporary
+          mountPath: /tmp
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: cyberwatch-data
+    - name: temporary
+      emptyDir:
+        sizeLimit: 64Mi

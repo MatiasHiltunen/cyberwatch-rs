@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the repository toolchain
+        run: rustup show active-toolchain
+      - name: Install validation dependency
+        run: python3 -m pip install -r tools/requirements-dev.txt
+      - name: Rust, API, recovery and policy regression checks
+        run: python3 tools/check.py
+      - name: Render local and Rahti manifests
+        run: |
+          mkdir -p reports
+          kubectl kustomize deploy/overlays/local > reports/local.yaml
+          kubectl kustomize deploy/overlays/rahti > reports/rahti.yaml
+          python3 tools/policy_check.py reports/local.yaml reports/rahti.yaml
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: quality-evidence
+          path: reports/
+          retention-days: 14
+
+  security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: mkdir -p reports
+      - name: SAST (reviewed project rules plus Clippy in quality job)
+        run: |
+          python3 -m venv .ci-venv
+          .ci-venv/bin/pip install semgrep==1.176.0
+          .ci-venv/bin/semgrep scan --config security/semgrep.yml --metrics off --disable-version-check --error --json --output reports/sast.json src
+      - name: SCA, secret detection and IaC scan
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.74.0
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          skip-dirs: target,.git,.ci-venv,reports
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: json
+          output: reports/repository-security.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: security-findings
+          path: reports/
+          retention-days: 14
+
+  container:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the Rahti-compatible architecture
+        run: |
+          mkdir -p reports
+          docker build --platform linux/amd64 --tag cyberwatch:ci .
+          docker build --platform linux/amd64 --target maintenance --tag cyberwatch-maintenance:ci .
+      - name: Enforce runtime size and content limits; export minimal distribution
+        run: |
+          python3 tools/runtime_artifact.py --image cyberwatch:ci --output-dir dist
+          cp dist/runtime-size.json reports/runtime-size.json
+      - name: Image security gate
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.74.0
+          image-ref: cyberwatch:ci
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: json
+          output: reports/image-security.json
+      - name: Maintenance image security gate
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          version: v0.74.0
+          image-ref: cyberwatch-maintenance:ci
+          scanners: vuln,secret
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          format: json
+          output: reports/maintenance-security.json
+      - name: Software bill of materials
+        if: always()
+        run: |
+          trivy image --format cyclonedx --output reports/sbom.cdx.json cyberwatch:ci
+          trivy image --format cyclonedx --output reports/maintenance-sbom.cdx.json cyberwatch-maintenance:ci
+      - name: Start disposable offline demo
+        run: |
+          docker run -d --name cyberwatch-ci --read-only --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --cpus 1 --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16m --mount type=volume,dst=/app/data -p 127.0.0.1:8080:8080 -e DEMO_MODE=true -e REFRESH_ENABLED=false -e ADMIN_TOKEN="$(openssl rand -hex 32)" cyberwatch:ci
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/ready; then break; fi
+            sleep 1
+          done
+          python3 tools/smoke.py --url http://127.0.0.1:8080 --output reports/container-smoke.json
+          docker exec cyberwatch-ci /usr/local/bin/cyberwatch-rs --healthcheck
+      - name: Verify maintenance image can back up and restore the real demo database
+        run: |
+          docker stop cyberwatch-ci
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --volumes-from cyberwatch-ci cyberwatch-maintenance:ci backup /app/data/cyberwatch.db /app/data/ci-backup.db
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --volumes-from cyberwatch-ci cyberwatch-maintenance:ci restore /app/data/ci-backup.db /app/data/ci-restored.db --app-stopped
+          docker run -d --name cyberwatch-restored-ci --read-only --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --cpus 1 --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16m --volumes-from cyberwatch-ci -p 127.0.0.1:8080:8080 -e DEMO_MODE=true -e REFRESH_ENABLED=false -e DATABASE_PATH=/app/data/ci-restored.db -e ADMIN_TOKEN="$(openssl rand -hex 32)" cyberwatch:ci
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/ready; then break; fi
+            sleep 1
+          done
+          python3 tools/smoke.py --url http://127.0.0.1:8080 --output reports/restored-container-smoke.json
+          docker exec cyberwatch-restored-ci /usr/local/bin/cyberwatch-rs --healthcheck
+      - name: Passive DAST of this job's local demo only
+        run: |
+          chmod a+w reports
+          docker run --rm --network host -v "$PWD/reports:/zap/wrk:rw" -v "$PWD/security/zap-rules.tsv:/zap/rules.tsv:ro" ghcr.io/zaproxy/zaproxy:2.16.1 zap-baseline.py -t http://127.0.0.1:8080 -m 1 -T 3 -I -c /zap/rules.tsv -J dast.json -r dast.html
+      - name: Capture sanitized container output and clean up
+        if: always()
+        run: |
+          docker logs cyberwatch-ci > reports/container.log 2>&1 || true
+          docker logs cyberwatch-restored-ci > reports/restored-container.log 2>&1 || true
+          docker rm -fv cyberwatch-restored-ci cyberwatch-ci || true
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: container-evidence
+          path: reports/
+          retention-days: 14
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: runtime-linux-amd64
+          path: dist/
+          compression-level: 0
+          retention-days: 14

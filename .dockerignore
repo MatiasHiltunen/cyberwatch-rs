@@ -1,0 +1,21 @@
+# Default-deny build context: only files consumed by production/maintenance or
+# .devcontainer/Dockerfile are sent. The source ZIP has its own independent policy.
+**
+!Dockerfile
+!.dockerignore
+!Cargo.toml
+!Cargo.lock
+!rust-toolchain.toml
+!sources.default.json
+!LICENSE
+!src/
+!src/**/
+!src/**/*.rs
+!src/**/*.sql
+!web/
+!web/index.html
+!web/app.js
+!web/styles.css
+!tools/
+!tools/backup.py
+!tools/requirements-dev.txt

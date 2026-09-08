@@ -1,0 +1,20 @@
+rules:
+  - id: rust-disable-tls-verification
+    languages: [rust]
+    severity: ERROR
+    message: TLS certificate verification must remain enabled for intelligence ingestion.
+    pattern: $CLIENT.danger_accept_invalid_certs(true)
+  - id: rust-disable-hostname-verification
+    languages: [rust]
+    severity: ERROR
+    message: TLS hostname verification must remain enabled.
+    pattern: $CLIENT.danger_accept_invalid_hostnames(true)
+  - id: rust-shell-execution
+    languages: [rust]
+    severity: ERROR
+    message: The intelligence service has no need to invoke a command shell; review this trust boundary.
+    pattern-either:
+      - pattern: std::process::Command::new("sh")
+      - pattern: std::process::Command::new("bash")
+      - pattern: std::process::Command::new("cmd")
+      - pattern: std::process::Command::new("powershell")

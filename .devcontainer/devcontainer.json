@@ -1,0 +1,47 @@
+{
+  "name": "Cyberwatch Rust course workspace",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "containerUser": "vscode",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "init": true,
+  "containerEnv": {
+    "DEMO_MODE": "true",
+    "REFRESH_ENABLED": "false",
+    "BIND_ADDRESS": "127.0.0.1:8080",
+    "DATABASE_PATH": "./data/devcontainer-demo.db",
+    "WEB_DIR": "./web",
+    "CARGO_TARGET_DIR": "/home/vscode/cyberwatch-target"
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "Cyberwatch offline demo",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": ["cargo", "fetch", "--locked"],
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "ms-python.python"
+      ],
+      "settings": {
+        "rust-analyzer.check.command": "clippy",
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "remote.localPortHost": "localhost",
+        "[rust]": {
+          "editor.defaultFormatter": "rust-lang.rust-analyzer",
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  }
+}

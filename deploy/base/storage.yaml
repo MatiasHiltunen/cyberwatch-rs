@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cyberwatch-data
+spec:
+  # Select a block-backed CSI StorageClass in the environment overlay.
+  # RWO means one NODE, not one pod; replicas=1 and Recreate are also necessary.
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 2Gi

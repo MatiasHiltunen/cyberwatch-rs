@@ -1,0 +1,35 @@
+# Bootstrap once in a dedicated namespace. This identity can update an existing
+# Deployment, but cannot create workloads or read Secrets/delete storage.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cyberwatch-deployer
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cyberwatch-deployer
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    resourceNames: [cyberwatch]
+    verbs: [get, list, watch, patch]
+  - apiGroups: [apps]
+    resources: [replicasets]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [pods, events]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cyberwatch-deployer
+subjects:
+  - kind: ServiceAccount
+    name: cyberwatch-deployer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cyberwatch-deployer

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cyberwatch-data
+spec:
+  # Confirm current availability with oc get storageclass before applying.
+  storageClassName: standard-csi

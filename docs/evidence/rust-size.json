@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-09-08T10:54:23.7826205+03:00",
+  "target": "aarch64-pc-windows-msvc",
+  "rustc": "1.88.0 (6b00bc388 2025-06-23)",
+  "measurements": [
+    {
+      "name": "current-source baseline",
+      "binary_bytes": 11949056,
+      "opt_level": "3",
+      "lto": "thin",
+      "codegen_units": 1,
+      "strip": "symbols",
+      "panic": "unwind",
+      "server_compression": "gzip,deflate,brotli,zstd",
+      "build_seconds": 176,
+      "sha256": "21605f0eca112bd3587e7878aabd31489448cdb1bfa23c38663f9fe026190ea8"
+    },
+    {
+      "name": "unused feature trim and built-in healthcheck",
+      "binary_bytes": 11649536,
+      "opt_level": "3",
+      "lto": "thin",
+      "codegen_units": 1,
+      "strip": "symbols",
+      "panic": "unwind",
+      "server_compression": "gzip,deflate,brotli,zstd",
+      "build_seconds": 64,
+      "sha256": "7f4c462029eff37095175a5008316e239153e0881efa5a0ebdb841cd4172ff6b"
+    },
+    {
+      "name": "optimized production",
+      "binary_bytes": 7590912,
+      "opt_level": "s",
+      "lto": "fat",
+      "codegen_units": 1,
+      "strip": "symbols",
+      "panic": "unwind",
+      "server_compression": "gzip",
+      "build_seconds": 153,
+      "sha256": "41dcc8d6b90ffdcd26f607a713e009467d6a79a12aeb578605c3588cda230545"
+    }
+  ],
+  "reduction_bytes": 4358144,
+  "reduction_percent": 36.47,
+  "validation": {
+    "cargo_fmt": "passed",
+    "cargo_test_release_all_targets": "passed: 35 tests (25 library, 3 probe unit, 2 readiness CLI integration, 5 HTTP integration)",
+    "cargo_clippy_release_all_targets_deny_warnings": "passed"
+  },
+  "notes": [
+    "Baseline was rebuilt from current imported source; the older distributed executable was not used as the comparison.",
+    "Native Windows measurements are separate from Linux production container measurements.",
+    "An attempted z profile comparison was incomplete because the host ran out of disk space; no z result is claimed. Generated failed build directories were removed.",
+    "Server response compression is gzip; ingestion response decompression still supports Brotli, deflate, and gzip, with HTTP/2 and verified Rustls TLS.",
+    "Healthcheck probes GET /ready over bounded synchronous TCP before loading configuration, database, or Tokio runtime."
+  ]
+}

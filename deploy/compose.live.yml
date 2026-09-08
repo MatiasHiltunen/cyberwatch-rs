@@ -1,0 +1,6 @@
+# Separate project keeps synthetic and real intelligence in different volumes.
+# docker compose -p cyberwatch-live -f docker-compose.yml -f deploy/compose.live.yml up -d
+services:
+  cyberwatch:
+    environment:
+      DEMO_MODE: "false"
