@@ -1,0 +1,28 @@
+#cloud-config
+# Bootstrap only. No application secrets or disk formatting are embedded here.
+package_update: true
+package_upgrade: false
+packages:
+  - docker.io
+  - ca-certificates
+  - curl
+  - python3
+  - openssl
+  - e2fsprogs
+  - util-linux
+write_files:
+  - path: /etc/docker/daemon.json
+    owner: root:root
+    permissions: '0644'
+    content: |
+      {
+        "log-driver": "local",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
+runcmd:
+  - [systemctl, daemon-reload]
+  - [systemctl, enable, --now, docker.service]
+final_message: 'Cyberwatch host bootstrap completed; application installation is a separate verified step.'

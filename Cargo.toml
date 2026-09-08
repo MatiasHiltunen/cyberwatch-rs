@@ -2,7 +2,7 @@
 name = "cyberwatch-rs"
 version = "0.4.1"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.98.1"
 description = "Local-first cyber-security news and CVE intelligence server backed by Turso/libSQL"
 license = "MIT"
 

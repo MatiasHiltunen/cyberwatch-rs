@@ -1,0 +1,92 @@
+{
+  "recorded_at_utc": "2026-09-08T09:55:10.180815+00:00",
+  "scanner": {
+    "name": "Trivy",
+    "version": "0.74.0",
+    "platform": "windows-amd64 (ARM64 host emulation)",
+    "release_url": "https://github.com/aquasecurity/trivy/releases/tag/v0.74.0",
+    "archive_sha256": "94c40e0696e4b907a74b7b2e1438d5d72ebaca83115817407f568a002d520842",
+    "executable_sha256": "4c532e1f28f53282dc364671e87381cd77760fa9cafab143f576449c2207cdd5",
+    "database": {
+      "Version": 2,
+      "NextUpdate": "2026-09-09T07:08:01.235696486Z",
+      "UpdatedAt": "2026-09-08T07:08:01.235696926Z",
+      "DownloadedAt": "2026-09-08T09:04:41.989787343Z"
+    }
+  },
+  "scope": "Known OS vulnerabilities in the actual Azure VM installed-package inventory. Not a full filesystem, secret, runtime exploitability or running-kernel verification.",
+  "status": "failed",
+  "scanner_exit_code": 1,
+  "scanners": [
+    "vuln"
+  ],
+  "package_types": [
+    "os"
+  ],
+  "severity_gate": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "subscription_id": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "resource_group": "rg-cyberwatch-yamk-swe",
+  "vm_name": "cyberwatch-yamk",
+  "inventory_exported_at": "2026-09-08T09:44:04.030447+00:00",
+  "inventory_sha256": "34ab01ceb990c9f8c1dae00286a370d16b1dc1ab864f751ec18656516107f5d1",
+  "inventory_files": [
+    "etc/os-release",
+    "etc/lsb-release",
+    "var/lib/dpkg/status"
+  ],
+  "guest_evidence": {
+    "archiveSha256": "34ab01ceb990c9f8c1dae00286a370d16b1dc1ab864f751ec18656516107f5d1",
+    "archiveBytes": 179873,
+    "kernel": "6.17.0-1022-azure",
+    "packages": {
+      "certbot": "2.9.0-1",
+      "nginx": "1.24.0-2ubuntu7.17",
+      "nginx-common": "1.24.0-2ubuntu7.17",
+      "openssl": "3.0.13-0ubuntu3.15",
+      "python3-cryptography": "41.0.7-4ubuntu0.4"
+    }
+  },
+  "detected_os": {
+    "Family": "ubuntu",
+    "Name": "24.04"
+  },
+  "installed_packages": 680,
+  "findings_by_severity": {
+    "CRITICAL": 10,
+    "HIGH": 328
+  },
+  "unique_cve_ids": 169,
+  "findings_by_package": {
+    "linux-cloud-tools-common": 169,
+    "linux-tools-common": 169
+  },
+  "findings_with_fixed_version": 0,
+  "reported_findings_other_packages": 0,
+  "report": "azure-host-initial-security-scan.json",
+  "report_sha256": "a5eaaa18f5e0ff04afff92b93d3b0a469d88ab395443947b535be5007fe49ba6",
+  "sbom": "azure-host-initial-sbom.cdx.json",
+  "sbom_sha256": "43185b82e0adcbe5179b33403f7ba03521ed0f8319ca17445a5a99fa766663d8",
+  "notes": [
+    "No findings ignored, suppressed or reclassified.",
+    "Every selected finding is mapped through two Ubuntu kernel-source utility packages at version 6.8.0-139.139. This is not proof that each flaw is reachable in the running Azure kernel.",
+    "An APT removal simulation would also remove the linux-azure metapackage and eight Azure kernel/tool companions. Removal was rejected to preserve kernel updates and Azure integration.",
+    "Native scanning initially received an inventory without etc/lsb-release, reported an unsupported OS and was not accepted as verification. The actual exported release marker corrected OS detection.",
+    "Docker scanner startup stalled during a separate Docker Engine issue. Only the two task scanner clients were stopped; Docker Desktop and unrelated containers were not restarted."
+  ],
+  "vendor_samples": [
+    {
+      "id": "CVE-2026-53398",
+      "url": "https://ubuntu.com/security/CVE-2026-53398",
+      "observed": "Ubuntu Noble linux and linux-azure vulnerable; Noble linux-azure-6.17 end of life. Verified against the Ubuntu advisory updated 7 September 2026."
+    },
+    {
+      "id": "CVE-2026-63940",
+      "url": "https://ubuntu.com/security/CVE-2026-63940",
+      "observed": "Ubuntu Noble linux-azure-6.17 end of life. The record describes KVM/SEV behavior; per-architecture and runtime applicability needs individual assessment."
+    }
+  ],
+  "snapshot_role": "Initial deployed Ubuntu 6.17 host, retained before supported-stream kernel migration."
+}

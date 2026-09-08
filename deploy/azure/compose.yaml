@@ -1,0 +1,27 @@
+# Host Ubuntu Nginx and Certbot manage HTTPS separately; no proxy image is deployed.
+# Reference only: the installer uses systemd and does not require Compose.
+# To switch supervision, first stop/disable cyberwatch.service.
+# Run with --env-file /etc/cyberwatch/runtime.env; do not run alongside that service.
+services:
+  cyberwatch:
+    image: ${CYBERWATCH_IMAGE:?Use the reviewed local configuration digest}
+    container_name: cyberwatch
+    labels: {io.cyberwatch.managed: azure-live}
+    restart: unless-stopped
+    user: '10001:0'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    stop_grace_period: 30s
+    ports: ['127.0.0.1:8080:8080']
+    env_file: [/etc/cyberwatch/app.env]
+    volumes:
+      - /srv/cyberwatch-data/app:/app/data
+      - /etc/cyberwatch/secrets/admin-token:/run/secrets/admin-token:ro
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=32m,mode=1777']
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: '3'}

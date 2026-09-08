@@ -1,5 +1,6 @@
 FROM node:24-bookworm-slim AS node
-FROM rust:1.88.0-bookworm
+# Bootstrap from the published Bookworm image; rust-toolchain.toml installs 1.98.1 below.
+FROM rust:1.98.0-bookworm@sha256:82150a52ec202c1b14d7817e14516c392bb7f5cfebd88f1ed531cb37ebd39922
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

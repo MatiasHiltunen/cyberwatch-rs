@@ -1,0 +1,77 @@
+{
+  "recorded_at_utc": "2026-09-08T10:14:33.619138+00:00",
+  "scanned_at": "2026-09-08T13:14:12.9748431+03:00",
+  "scanner": {
+    "name": "Trivy",
+    "version": "0.74.0",
+    "platform": "windows-amd64 (ARM64 host emulation)",
+    "release_url": "https://github.com/aquasecurity/trivy/releases/tag/v0.74.0",
+    "archive_sha256": "94c40e0696e4b907a74b7b2e1438d5d72ebaca83115817407f568a002d520842",
+    "executable_sha256": "4c532e1f28f53282dc364671e87381cd77760fa9cafab143f576449c2207cdd5",
+    "database": {
+      "Version": 2,
+      "NextUpdate": "2026-09-09T07:08:01.235696486Z",
+      "UpdatedAt": "2026-09-08T07:08:01.235696926Z",
+      "DownloadedAt": "2026-09-08T09:04:41.989787343Z"
+    }
+  },
+  "status": "passed",
+  "scanner_exit_code": 0,
+  "scanners": [
+    "vuln",
+    "secret",
+    "misconfig"
+  ],
+  "severity_gate": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "findings": {
+    "Vulnerabilities": 0,
+    "Secrets": 0,
+    "Misconfigurations": 0
+  },
+  "excluded_directories": [
+    "reports",
+    "secrets",
+    ".secrets",
+    "data",
+    "target",
+    "dist",
+    ".git",
+    ".ci-venv",
+    ".venv"
+  ],
+  "excluded_generated_evidence": [
+    "docs/evidence/*-security-scan.json",
+    "docs/evidence/*sbom*.json",
+    "docs/evidence/*security-status.json",
+    "docs/evidence/security-verification.json"
+  ],
+  "report": "azure-source-security-scan.json",
+  "report_sha256": "e9f4dc3ca3eff11b23b6a5e9432d03e98419cf56c1952266ebebfdf4925b7b2a",
+  "recognized_dependency_manifests": [
+    "Cargo.lock"
+  ],
+  "recognized_configurations": [
+    ".devcontainer/Dockerfile",
+    "Dockerfile",
+    "deploy/base/deployment.yaml",
+    "deploy/base/networkpolicy.yaml",
+    "deploy/base/resourcequota.yaml",
+    "deploy/base/service.yaml",
+    "deploy/base/serviceaccount.yaml",
+    "deploy/base/storage.yaml",
+    "deploy/maintenance/base/pod.yaml",
+    "deploy/overlays/local/security-context.yaml",
+    "deploy/overlays/rahti/route.yaml",
+    "deploy/overlays/rahti/storage.yaml",
+    "deploy/rbac/deployer.yaml"
+  ],
+  "limits": [
+    "Bicep and Nginx configuration are not recognized configuration targets in this report. Their compiler/what-if/nginx-t/runtime checks are separate evidence.",
+    "This source report is distinct from the pre-Azure source scan and from image/host package scans.",
+    "No findings ignored or reclassified."
+  ],
+  "source_freeze": "Final Azure deployment code including maintained-kernel helper; documentation and evidence updates may follow."
+}

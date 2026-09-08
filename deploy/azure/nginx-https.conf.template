@@ -1,0 +1,52 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name @@FQDN@@;
+    server_tokens off;
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/lib/letsencrypt;
+        default_type text/plain;
+        try_files $uri =404;
+        auth_basic off;
+    }
+    location / {
+        return 301 https://@@FQDN@@$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name @@FQDN@@;
+    server_tokens off;
+    ssl_certificate /etc/letsencrypt/live/@@FQDN@@/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/@@FQDN@@/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:CyberwatchSSL:1m;
+    ssl_session_timeout 1d;
+    client_max_body_size 1m;
+    auth_basic "Cyberwatch";
+    auth_basic_user_file /etc/nginx/cyberwatch/reader.htpasswd;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Authorization $http_authorization;
+    proxy_set_header Connection "";
+    proxy_connect_timeout 5s;
+    proxy_read_timeout 60s;
+
+    location = /api/v1/refresh {
+        # POST authenticates with the application's Bearer token. Other methods
+        # still require the reader password before reaching the application.
+        auth_basic off;
+        limit_except POST {
+            auth_basic "Cyberwatch";
+            auth_basic_user_file /etc/nginx/cyberwatch/reader.htpasswd;
+        }
+        proxy_pass http://127.0.0.1:8080;
+    }
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+    }
+}

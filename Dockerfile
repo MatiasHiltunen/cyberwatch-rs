@@ -1,16 +1,18 @@
 # Reviewed multi-architecture base digests. Refresh deliberately and rescan both images.
-ARG RUST_IMAGE=rust:1.88.0-bookworm@sha256:af306cfa71d987911a781c37b59d7d67d934f49684058f96cf72079c3626bfe0
+# Docker Hub has not published the 1.98.1 Bookworm image yet. Use the verified
+# 1.98.0 base and install 1.98.1 below; Bookworm matches the runtime glibc.
+ARG RUST_IMAGE=rust:1.98.0-bookworm@sha256:82150a52ec202c1b14d7817e14516c392bb7f5cfebd88f1ed531cb37ebd39922
 ARG RUNTIME_IMAGE=gcr.io/distroless/cc-debian12:nonroot@sha256:9dac0a79194e45a7da0158a9c6da57b217585af0786db3845d1f0ec1a0dd182f
 ARG MAINTENANCE_IMAGE=python:3.13-alpine@sha256:7415fbc3c9e4979cc717d92377ab2bc7b2b4a2af1ac03cc52b5f3f88efedaf3a
 
 FROM ${RUST_IMAGE} AS builder
+# Install only the compiler needed by production; editor components stay in development.
+RUN rustup toolchain install 1.98.1 --profile minimal --no-self-update
 WORKDIR /app
 COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
 COPY sources.default.json ./
 COPY src ./src
-# Select the builder's installed compiler without installing development-only
-# rustfmt/clippy components listed in rust-toolchain.toml.
-RUN cargo +1.88.0 build --release --locked --bin cyberwatch-rs \
+RUN cargo +1.98.1 build --release --locked --bin cyberwatch-rs \
     && mkdir -p /runtime-data/data \
     && chown 10001:0 /runtime-data/data \
     && chmod 2770 /runtime-data/data

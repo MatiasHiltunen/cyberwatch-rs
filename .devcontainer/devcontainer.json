@@ -11,12 +11,12 @@
   "containerEnv": {
     "DEMO_MODE": "true",
     "REFRESH_ENABLED": "false",
-    "BIND_ADDRESS": "127.0.0.1:8080",
+    "BIND_ADDRESS": "0.0.0.0:8080",
     "DATABASE_PATH": "./data/devcontainer-demo.db",
     "WEB_DIR": "./web",
-    "CARGO_TARGET_DIR": "/home/vscode/cyberwatch-target"
+    "CARGO_TARGET_DIR": "/home/vscode/cyberwatch-target",
+    "ADMIN_TOKEN_FILE": "/home/vscode/secrets/admin-token"
   },
-  "forwardPorts": [8080],
   "portsAttributes": {
     "8080": {
       "label": "Cyberwatch offline demo",
@@ -24,7 +24,10 @@
       "protocol": "http"
     }
   },
-  "postCreateCommand": ["cargo", "fetch", "--locked"],
+  "postCreateCommand": [
+    "python",
+    ".devcontainer/post-create.py"
+  ],
   "waitFor": "postCreateCommand",
   "customizations": {
     "vscode": {
@@ -43,5 +46,9 @@
         }
       }
     }
-  }
+  },
+  "runArgs": [
+    "--publish",
+    "127.0.0.1:8080:8080"
+  ]
 }

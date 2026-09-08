@@ -1,0 +1,8 @@
+{
+  "baseline": "/var/lib/cyberwatch-persistence-check.json",
+  "boot_id": "22948aa6-3703-4855-9ec5-c7bb1f2ad03d",
+  "filesystem_uuid": "4be292e5-0fdb-4cfb-a30e-258cf68a3f1f",
+  "items_before": 2228,
+  "probe_sha256": "8ccdf7682bf32b52751cce57c0b99a7331dbc303a5240c5ad8e27048a7582c61",
+  "status": "armed"
+}

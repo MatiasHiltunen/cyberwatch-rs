@@ -4,7 +4,7 @@ Cyberwatch RS is a local-first Rust server and browser dashboard that gathers cy
 
 The service runs as one executable. It schedules ingestion, normalizes and categorizes records, cross-validates CVEs, exposes a JSON API, and serves the bundled web client without a Node.js build step. Explicit offline demo mode supplies deterministic synthetic intelligence for repeatable assessment and security tests.
 
-Start with the [course map](docs/course-map.md), [assessment guide](docs/assessment-guide.md), [deployment and recovery guide](deploy/README.md), [production size guide](docs/production-size.md), and [actual verification status](RELEASE_STATUS.md). The example covers both courses' technical and analytical work; personal learning, real peer review, hosted runs, and independent YAMK283 baseline evidence must still be completed by the learner.
+Start with the [course map](docs/course-map.md), [assessment guide](docs/assessment-guide.md), [deployment and recovery guide](deploy/README.md), [Azure deployment runbook](docs/azure-deployment.md), [production size guide](docs/production-size.md), and [actual verification status](RELEASE_STATUS.md). The example covers both courses' technical and analytical work; personal learning, real peer review, hosted runs, and independent YAMK283 baseline evidence must still be completed by the learner.
 
 ## Included in this bundle
 
@@ -25,9 +25,14 @@ Start with the [course map](docs/course-map.md), [assessment guide](docs/assessm
 
 For a native build:
 
-- Rust 1.88 or later
+- Rust 1.98.1 (pinned in `rust-toolchain.toml`, including Rustfmt, Clippy and `rust-src`)
 - A C/C++ build toolchain suitable for Rust dependencies
 - CA certificates and outbound HTTPS access for ingestion
+
+From the project directory, run `rustup show active-toolchain` to install or verify
+that version and its components, then `rustc --version`. If VS Code still reports
+the old compiler, run **Rust Analyzer: Restart server** or **Developer: Reload Window**.
+After upgrading an existing Dev Container, run **Dev Containers: Rebuild Container**.
 
 Docker can be used instead of installing Rust locally.
 

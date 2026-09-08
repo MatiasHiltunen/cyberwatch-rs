@@ -40,3 +40,22 @@ Proposed working service targets: triage high findings within two working days, 
 ## Safe demonstration of a blocked change
 
 Use existing negative policy/unit-test fixtures in a disposable branch. Show that the specific adverse fixture triggers the intended failure while valid configuration passes. Link the failing run to its corrective commit and successful rerun. Do not commit a real secret, add a real vulnerable dependency, disable gates, or publish deliberately unsafe images simply to obtain evidence. Clearly label synthetic fixture findings as test fixtures.
+
+## Actual Azure deployment decisions — 8 September 2026
+
+These observations came from the deployed example and its candidate scans.
+The [Azure security evidence](../evidence/azure-security-status.md) identifies
+the scanner, exact payloads, dates, limitations and remaining findings.
+
+| ID | Observation | Decision and verification | Remaining work |
+| --- | --- | --- | --- |
+| A01 | The proposed Caddy image reported 38 HIGH and 1 CRITICAL package findings | Rejected before deployment; use Ubuntu-maintained host Nginx/Certbot. Retain the rejected image's scan and SBOM | Continue host package review and certificate-renewal checks |
+| A02 | The backup service's filesystem restrictions prevented SQLite WAL shared-memory handling | Grant writes only to the dedicated database and backup directories while retaining a read-only database connection. Actual private off-VM transfer and [local restore verification](../evidence/azure-backup-verification.json) preserved all 2,226 backed-up item IDs | Schedule off-VM backups and exercise the separate live-service database switch |
+| A03 | Ubuntu marked the image's Azure 6.17 kernel stream end of life | Install the maintained Azure LTS stream, verify a trial boot, review/remove 13 obsolete packages, and verify an ordinary `6.8.0-1067-azure` boot without a version-specific pin. Data UUID, 2,232 records and services remained intact | Continue security updates and required reboots on the retained LTS metapackage |
+| A04 | Final host inventory reported 1,504 HIGH and 45 CRITICAL kernel-source package associations, covering 175 unique CVEs | Preserve the failed gate, initial report and vendor triage; no fixed versions are reported. Do not suppress findings or equate package associations with proven runtime exploitability | Accountable human review of each material residual advisory; no risk acceptance or exception is recorded |
+
+These are supplied example evidence and decisions, not the learner's personal
+T0-to-T1 contribution or completed peer review. The operator owns maintenance;
+any course assessment and residual-risk acceptance still require the appropriate
+human evidence and approval. Successful deployment does not override a failed
+security gate.

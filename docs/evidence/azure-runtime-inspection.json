@@ -1,0 +1,38 @@
+{
+  "imageId": "sha256:8335ecffc98aa1fbfa1b8ff7837f17c0bd0f25c40fb24fd011d2bc84ce47f36f",
+  "user": "10001:0",
+  "readOnlyRootfs": true,
+  "capDrop": [
+    "ALL"
+  ],
+  "securityOpt": [
+    "no-new-privileges:true"
+  ],
+  "memoryBytes": 536870912,
+  "nanoCpus": 1000000000,
+  "portBindings": {
+    "8080/tcp": [
+      {
+        "HostIp": "127.0.0.1",
+        "HostPort": "8080"
+      }
+    ]
+  },
+  "health": "healthy",
+  "dataMount": "/srv/cyberwatch-data/app",
+  "failedSourceIds": [
+    "feed-australian-cyber",
+    "feed-project-zero",
+    "feed-google-security",
+    "feed-govcert-hk",
+    "feed-microsoft-msrc",
+    "feed-ncsc-fi",
+    "nvd",
+    "feed-red-hat-security",
+    "feed-sophos-news",
+    "feed-trend-micro"
+  ],
+  "timers": "NEXT                            LEFT LAST                           PASSED UNIT                    ACTIVATES\nTue 2026-09-08 09:52:12 UTC      59s Tue 2026-09-08 09:51:12 UTC 263ms ago cyberwatch-health.timer cyberwatch-health.service\nTue 2026-09-08 14:46:23 UTC 4h 55min Tue 2026-09-08 09:19:13 UTC         - certbot.timer           certbot.service\nWed 2026-09-09 03:24:02 UTC      17h Tue 2026-09-08 09:19:36 UTC         - cyberwatch-backup.timer cyberwatch-backup.service\n\n3 timers listed.\n",
+  "memory": "               total        used        free      shared  buff/cache   available\nMem:             950         366         133           4         532         583\nSwap:              0           0           0\n",
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/root        30G  2.4G   28G   8% /\n/dev/sdb        3.9G   15M  3.7G   1% /srv/cyberwatch-data\n"
+}

@@ -40,8 +40,19 @@ REQUIRED_ARCHIVE_FILES = {
     f"{ARCHIVE_ROOT}/deploy/base/deployment.yaml",
     f"{ARCHIVE_ROOT}/monitoring/prometheus.yml",
     f"{ARCHIVE_ROOT}/.devcontainer/devcontainer.json",
+    f"{ARCHIVE_ROOT}/.devcontainer/post-create.py",
     f"{ARCHIVE_ROOT}/.devcontainer/Dockerfile",
     f"{ARCHIVE_ROOT}/.devcontainer/README.md",
+    f"{ARCHIVE_ROOT}/deploy/azure/main.bicep",
+    f"{ARCHIVE_ROOT}/deploy/azure/deploy.ps1",
+    f"{ARCHIVE_ROOT}/deploy/azure/deploy.py",
+    f"{ARCHIVE_ROOT}/deploy/azure/install-runtime.sh",
+    f"{ARCHIVE_ROOT}/deploy/azure/export-evidence.py",
+    f"{ARCHIVE_ROOT}/deploy/azure/check-persistence.py",
+    f"{ARCHIVE_ROOT}/deploy/azure/verify-live.py",
+    f"{ARCHIVE_ROOT}/deploy/azure/verify-backup.py",
+    f"{ARCHIVE_ROOT}/deploy/azure/maintain-kernel.py",
+    f"{ARCHIVE_ROOT}/docs/azure-deployment.md",
 }
 
 EXCLUDED_PARTS = {

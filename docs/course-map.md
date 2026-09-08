@@ -15,7 +15,9 @@ These are the supplied autumn 2026 definitions (content version 2026.08.28). Con
 
 Both courses require their own repository, backlog, environment, portfolio, individual evidence, and peer assessment. YAMK282 is not a prerequisite for YAMK283. YAMK283 may start from a named frozen copy of YAMK282, but its assessed security work must be distinguishable from that baseline. See [baseline procedure](assessment-guide.md#freeze-and-separate-the-courses).
 
-The archived source used to prepare this example is identified file by file in [source-baseline.json](evidence/source-baseline.json). That import manifest is **not** proof of a passing T0 pipeline, an assessed YAMK282 version, or separate student repositories. Neither a Git host nor a cloud environment is created by this documentation.
+The archived source used to prepare this example is identified file by file in [source-baseline.json](evidence/source-baseline.json). That import manifest is **not** proof of a passing T0 pipeline, an assessed YAMK282 version, or separate student repositories. The separately authorized [Azure deployment](azure-deployment.md) supplies a working live environment and recorded technical checks; no Git host or student repositories were created.
+
+The Azure example adds Bicep and `az` plan/provisioning evidence for YAMK282 T3, live metrics and persistent backup/reboot checks for T4, and authentication, container restrictions, scanned package inventories and private credential handling for YAMK283 T3/T4. Its private Blob artifact transfer does not demonstrate a registry publication or a hosted CI run. Students still need the course-specific repositories, reviewed changes, personal analysis and exercises listed below.
 
 ## YAMK282 technical tasks
 

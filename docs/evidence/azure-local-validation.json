@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "staticRegressionTests": 23,
+  "checks": [
+    "project/schema/source validation",
+    "deployment/workflow policy",
+    "JavaScript syntax",
+    "Azure Python syntax"
+  ],
+  "rustSourceChangedSincePriorVerifiedBuild": false,
+  "productionImageChanged": false,
+  "hostedCIExecuted": false
+}

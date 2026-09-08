@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "bootId": "d6086b7e-32db-4f33-8b64-46c1a3c388d2",
+  "kernel": "6.8.0-1067-azure",
+  "ordinaryBoot": true,
+  "explicitBootPin": false,
+  "dataFilesystem": {
+    "uuid": "4be292e5-0fdb-4cfb-a30e-258cf68a3f1f",
+    "fstype": "ext4"
+  },
+  "items": 2232,
+  "nfsdLoaded": false,
+  "nfsServerPortListening": false,
+  "units": {
+    "cyberwatch.service": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "nginx.service": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "cyberwatch-health.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "cyberwatch-backup.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "certbot.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    }
+  },
+  "nginx_configuration": "passed",
+  "readiness": "passed",
+  "container_health": "healthy",
+  "demo_mode": false,
+  "refresh_enabled": true
+}

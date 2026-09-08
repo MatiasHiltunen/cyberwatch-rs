@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "blob": "backup-20260908T093543Z-bd726a3a.tar.gz",
+  "transferSha256": "95f07fa92e62c7f4db652ba03016cf16e1574614b72b5a46e9a260d43286a5d3",
+  "snapshot": {
+    "operation": "verify",
+    "integrity": "ok",
+    "bytes": 14229504,
+    "sha256": "b809604b6f7aaa36f9bf522b64187542b1bf824a8d56407ce1477c0eb79b304e"
+  },
+  "restored": {
+    "operation": "restore",
+    "integrity": "ok",
+    "elapsed_seconds": 0.262,
+    "bytes": 14229504,
+    "sha256": "2dd22f4a3ad126f5b55cbf21310ee0ff10c2567f067028464dadf97a2bb9bb8b"
+  },
+  "itemsPreserved": 2226,
+  "scope": "Off-VM backup transfer and snapshot hashes, SQLite integrity, and all item IDs restored into a new local database. The live database was not replaced."
+}

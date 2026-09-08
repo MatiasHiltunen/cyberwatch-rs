@@ -1,0 +1,12 @@
+{
+  "bundle": "cyberwatch-azure-bundle.tar.gz",
+  "sha256": "3596f5b3a8a00165d504aac0502959ff2dcc77fb2e5bd6f54bc6a7282f74e55a",
+  "bytes": 12472841,
+  "image": "cyberwatch-size-optimized:local",
+  "sourceImage": "cyberwatch-size-optimized:local",
+  "imageConfigId": "sha256:1e314a04f9c4ec2495074691831683b766d8fc4d9020d019ae552d081def01fc",
+  "proxyStrategy": "ubuntu-nginx-certbot",
+  "platform": "linux/arm64",
+  "imageSource": "provided-archive",
+  "imageArchiveSha256": "1400c568018aeabf3ff75e2eecb15ba55f6aeb5ddd556dfd2d3e587522d7d83f"
+}

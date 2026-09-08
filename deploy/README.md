@@ -63,9 +63,10 @@ digest. Review updates to `RUST_IMAGE`, `RUNTIME_IMAGE` and `MAINTENANCE_IMAGE`
 regularly, rebuild, scan and record the resulting image digests. The Rust builder
 and runtime both use Debian 12; changing the runtime must preserve the binary's
 glibc and shared-library requirements. The [distroless image documentation](https://github.com/GoogleContainerTools/distroless)
-describes supported tags and signature verification. The maintenance base is the
-official Python slim image on Debian 12; no OS packages are downloaded during
-this project's build. Pins and lockfiles constrain inputs but are not a promise
+describes supported tags and signature verification. The separate maintenance
+image uses the pinned official Python Alpine base, applies its pinned `libuuid`
+security update, and removes unused pip, ensurepip and setuptools tooling.
+Pins and lockfiles constrain inputs but are not a promise
 of bit-identical compiler output. CI scans the two built images and produces
 their SBOM/provenance.
 
@@ -408,7 +409,8 @@ oc delete secret cyberwatch-admin
 Also remove retained generated `cyberwatch-config-*` ConfigMaps and any maintenance
 pod after listing and checking their names. Deleting the entire dedicated project
 is an alternative only after confirming it contains no other work. Never use a
-wildcard namespace deletion. No automation in this repository provisions cloud
-resources or purchases services. Check current [CSC billing and allocation rules](https://docs.csc.fi/cloud/rahti/get-started/billing/)
+wildcard namespace deletion. The optional [Azure deployment runbook](../docs/azure-deployment.md)
+and its CLI automation provision billable resources in the explicitly selected
+Azure subscription. Check current [CSC billing and allocation rules](https://docs.csc.fi/cloud/rahti/get-started/billing/)
 before deploying; record consumed CPU/memory/storage time in the course cost
 evidence. A quota bounds resource use, not a guaranteed currency charge.

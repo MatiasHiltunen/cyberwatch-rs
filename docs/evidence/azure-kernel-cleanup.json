@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "runningKernel": "6.8.0-1067-azure",
+  "removedPackages": [
+    "linux-azure",
+    "linux-azure-6.17-cloud-tools-6.17.0-1022",
+    "linux-azure-6.17-headers-6.17.0-1022",
+    "linux-azure-6.17-tools-6.17.0-1022",
+    "linux-cloud-tools-6.17.0-1022-azure",
+    "linux-cloud-tools-azure",
+    "linux-headers-6.17.0-1022-azure",
+    "linux-headers-azure",
+    "linux-image-6.17.0-1022-azure",
+    "linux-image-azure",
+    "linux-modules-6.17.0-1022-azure",
+    "linux-tools-6.17.0-1022-azure",
+    "linux-tools-azure"
+  ],
+  "retainedLtsMeta": "linux-azure-lts-24.04",
+  "retainedLtsMetaVersion": "6.8.0-1067.75",
+  "automaticRemoval": false,
+  "versionSpecificGrubPin": false,
+  "oneShotCleared": true,
+  "readiness": "passed"
+}

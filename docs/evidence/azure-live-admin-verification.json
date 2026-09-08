@@ -1,0 +1,72 @@
+{
+  "recorded_at_utc": "2026-09-08T09:30:45.974680+00:00",
+  "url": "https://cyberwatch-yamk-afe8ae-20260908.swedencentral.cloudapp.azure.com",
+  "status": "passed",
+  "tls_certificate_validation": "passed",
+  "checks": [
+    "GET /: 401",
+    "GET /api/v1/items: 401",
+    "POST /api/v1/refresh: 401",
+    "POST /api/v1/refresh: 401",
+    "POST /api/v1/refresh: 202",
+    "GET /: 200",
+    "GET /ready: 200",
+    "GET /health: 200",
+    "GET /metrics: 200",
+    "GET /api/v1/stats: 200",
+    "GET /api/v1/sources: 200",
+    "GET /api/v1/refresh/status: 200",
+    "GET /api/v1/items?kind=invalid: 400",
+    "GET /api/v1/does-not-exist: 404"
+  ],
+  "health": {
+    "demo_mode": false,
+    "refresh_enabled": true,
+    "status": "ok",
+    "version": "0.4.1"
+  },
+  "stats": {
+    "total_items": 2226,
+    "news_items": 464,
+    "cve_items": 1762,
+    "critical_cves": 5,
+    "high_cves": 28,
+    "exploited_cves": 1695,
+    "kev_cves": 1695,
+    "validated_cves": 50,
+    "sources_seen": 27,
+    "categories": {
+      "ai-security": 18,
+      "cloud": 545,
+      "cryptocurrency": 7,
+      "data-breach": 5,
+      "denial-of-service": 73,
+      "exploit": 802,
+      "general-security": 544,
+      "identity": 285,
+      "malware": 47,
+      "mobile": 246,
+      "network": 324,
+      "ot-ics": 156,
+      "patching": 841,
+      "phishing": 78,
+      "ransomware": 8,
+      "supply-chain": 49,
+      "zero-day": 18
+    },
+    "generated_at": "2026-09-08T09:30:45.626Z"
+  },
+  "configured_sources": 38,
+  "sources_with_errors": 10,
+  "live_records_observed": 5,
+  "refresh_status": {
+    "job_id": "eb7d1646-e3c5-4f05-9a45-629dcad21f83",
+    "state": "running",
+    "reason": "manual-api",
+    "queued_at": "2026-09-08T09:30:45.192Z",
+    "started_at": "2026-09-08T09:30:45.192Z",
+    "finished_at": null,
+    "report": null,
+    "error": null
+  }
+}

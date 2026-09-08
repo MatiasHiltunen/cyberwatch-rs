@@ -1,0 +1,41 @@
+{
+  "recorded_at_utc": "2026-09-08T09:07:07.854261+00:00",
+  "scanner": "Trivy 0.74.0",
+  "scanner_image": "aquasec/trivy@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969",
+  "database": {
+    "Version": 2,
+    "NextUpdate": "2026-09-09T07:08:01.235696486Z",
+    "UpdatedAt": "2026-09-08T07:08:01.235696926Z",
+    "DownloadedAt": "2026-09-08T09:04:41.989787343Z"
+  },
+  "image": "caddy:2.11.4-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648",
+  "image_config_id": "sha256:6b08c1b9858ca9a7d99c1da13c3695081e0e604c6cf214ca26a7ce0e2c4fd9b4",
+  "platform": "linux/arm64",
+  "status": "failed",
+  "scanner_exit_code": 1,
+  "scanners": [
+    "vuln",
+    "secret"
+  ],
+  "severity_gate": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "findings": {
+    "HIGH": 38,
+    "CRITICAL": 1,
+    "secrets": 0
+  },
+  "report_created_at_utc": "2026-09-08T09:04:46.184121995Z",
+  "report_sha256": "8d253ed974b3845a30110c6a0de7ad1cf63622f6e555054c9f09f226bb0c9a28",
+  "sbom_sha256": "c9d8ac979d4dd77388a145a9d5f62bb98b17f7b43b22fc7fd2dc80914a48907f",
+  "sbom_components": 180,
+  "notes": [
+    "No findings ignored or reclassified.",
+    "Trivy warned that some vulnerability details were unavailable (possibly rejected CVE); the selected-severity report was produced and the gate failed.",
+    "OS package updates alone cannot fix embedded Go runtime/module findings."
+  ],
+  "disposition": "Rejected candidate; not deployed. Replaced in the Azure design by Ubuntu-maintained Nginx and Certbot.",
+  "report": "azure-proxy-initial-security-scan.json",
+  "sbom": "azure-proxy-initial-sbom.cdx.json"
+}

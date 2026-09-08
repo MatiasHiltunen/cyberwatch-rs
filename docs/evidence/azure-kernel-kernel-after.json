@@ -1,0 +1,42 @@
+{
+  "status": "boot-verified-removal-plan-only",
+  "runningKernel": "6.8.0-1067-azure",
+  "bootId": "9071cbef-741f-45f6-bddf-a0c22c95f122",
+  "previousBootId": "22948aa6-3703-4855-9ec5-c7bb1f2ad03d",
+  "packagesToReviewForRemoval": {
+    "linux-azure": "6.17.0-1022.22",
+    "linux-azure-6.17-cloud-tools-6.17.0-1022": "6.17.0-1022.22",
+    "linux-azure-6.17-headers-6.17.0-1022": "6.17.0-1022.22",
+    "linux-azure-6.17-tools-6.17.0-1022": "6.17.0-1022.22",
+    "linux-cloud-tools-6.17.0-1022-azure": "6.17.0-1022.22",
+    "linux-cloud-tools-azure": "6.17.0-1022.22",
+    "linux-headers-6.17.0-1022-azure": "6.17.0-1022.22",
+    "linux-headers-azure": "6.17.0-1022.22",
+    "linux-image-6.17.0-1022-azure": "6.17.0-1022.22",
+    "linux-image-azure": "6.17.0-1022.22",
+    "linux-modules-6.17.0-1022-azure": "6.17.0-1022.22",
+    "linux-tools-6.17.0-1022-azure": "6.17.0-1022.22",
+    "linux-tools-azure": "6.17.0-1022.22"
+  },
+  "simulationCommand": [
+    "apt-get",
+    "--simulate",
+    "purge",
+    "linux-azure",
+    "linux-azure-6.17-cloud-tools-6.17.0-1022",
+    "linux-azure-6.17-headers-6.17.0-1022",
+    "linux-azure-6.17-tools-6.17.0-1022",
+    "linux-cloud-tools-6.17.0-1022-azure",
+    "linux-cloud-tools-azure",
+    "linux-headers-6.17.0-1022-azure",
+    "linux-headers-azure",
+    "linux-image-6.17.0-1022-azure",
+    "linux-image-azure",
+    "linux-modules-6.17.0-1022-azure",
+    "linux-tools-6.17.0-1022-azure",
+    "linux-tools-azure"
+  ],
+  "packagesRemoved": [],
+  "persistentGrubPin": false,
+  "nextStep": "Review purge simulation, retain all LTS packages, remove only approved obsolete packages, update-grub and verify another boot. Until then default 0 can select the retained 6.17 kernel."
+}

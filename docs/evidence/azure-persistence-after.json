@@ -1,0 +1,40 @@
+{
+  "baseline_retained": "/var/lib/cyberwatch-persistence-check.json",
+  "boot_id_after": "22948aa6-3703-4855-9ec5-c7bb1f2ad03d",
+  "boot_id_before": "ce1b237b-4439-4857-add8-874fc59d4821",
+  "container_health": "healthy",
+  "demo_mode": false,
+  "filesystem_uuid": "4be292e5-0fdb-4cfb-a30e-258cf68a3f1f",
+  "integrity": "ok",
+  "items_after": 2228,
+  "items_before": 2226,
+  "nginx_configuration": "passed",
+  "nonce_survived": true,
+  "probe_sha256": "1fe1dc93e63b3d53a11e8126391b8d282c34de86d68891f16d0ee7de387ef235",
+  "probe_table_removed": true,
+  "readiness": "passed",
+  "refresh_enabled": true,
+  "status": "passed",
+  "units": {
+    "certbot.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "cyberwatch-backup.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "cyberwatch-health.timer": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "cyberwatch.service": {
+      "active": "active",
+      "enabled": "enabled"
+    },
+    "nginx.service": {
+      "active": "active",
+      "enabled": "enabled"
+    }
+  }
+}

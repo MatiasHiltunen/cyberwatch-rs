@@ -1,0 +1,54 @@
+{
+  "sourceErrors": [
+    {
+      "source": "feed-australian-cyber",
+      "lastErrorAt": "2026-09-08T09:46:48.488Z",
+      "error": "source feed-australian-cyber is in backoff until 2026-09-08 09:47:10.948504409 UTC"
+    },
+    {
+      "source": "feed-google-security",
+      "lastErrorAt": "2026-09-08T09:46:49.790Z",
+      "error": "source feed-google-security is in backoff until 2026-09-08 09:47:20.639655087 UTC"
+    },
+    {
+      "source": "feed-govcert-hk",
+      "lastErrorAt": "2026-09-08T09:46:48.599Z",
+      "error": "source feed-govcert-hk is in backoff until 2026-09-08 09:47:15.570782226 UTC"
+    },
+    {
+      "source": "feed-microsoft-msrc",
+      "lastErrorAt": "2026-09-08T09:46:49.777Z",
+      "error": "source feed-microsoft-msrc is in backoff until 2026-09-08 09:47:19.166015264 UTC"
+    },
+    {
+      "source": "feed-ncsc-fi",
+      "lastErrorAt": "2026-09-08T09:46:49.560Z",
+      "error": "source feed-ncsc-fi is in backoff until 2026-09-08 09:47:16.880129051 UTC"
+    },
+    {
+      "source": "feed-project-zero",
+      "lastErrorAt": "2026-09-08T09:46:49.802Z",
+      "error": "source feed-project-zero is in backoff until 2026-09-08 09:47:22.778924877 UTC"
+    },
+    {
+      "source": "feed-red-hat-security",
+      "lastErrorAt": "2026-09-08T09:46:50.700Z",
+      "error": "source feed-red-hat-security is in backoff until 2026-09-08 09:47:26.057004675 UTC"
+    },
+    {
+      "source": "feed-sophos-news",
+      "lastErrorAt": "2026-09-08T09:46:50.684Z",
+      "error": "source feed-sophos-news is in backoff until 2026-09-08 09:47:25.100719460 UTC"
+    },
+    {
+      "source": "feed-trend-micro",
+      "lastErrorAt": "2026-09-08T09:46:50.641Z",
+      "error": "source feed-trend-micro is in backoff until 2026-09-08 09:47:24.139770886 UTC"
+    },
+    {
+      "source": "nvd",
+      "lastErrorAt": "2026-09-08T09:46:46.960Z",
+      "error": "source nvd is in backoff until 2026-09-08 09:47:53.731939469 UTC"
+    }
+  ]
+}

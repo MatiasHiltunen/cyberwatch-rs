@@ -1,0 +1,27 @@
+{
+  "kind": "inventory",
+  "subscriptionId": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "resourceGroup": "rg-cyberwatch-yamk-swe",
+  "vmName": "cyberwatch-yamk",
+  "storageAccount": "cywqqv6z273n7dfk",
+  "container": "evidence",
+  "blob": "inventory-20260908T102158Z-bc302a90.tar.gz",
+  "downloaded": "inventory-20260908T102158Z-bc302a90.tar.gz",
+  "bytes": 179899,
+  "sha256": "c7b2f9e8c78fd575b8bf86a289e1937f79f0394fb0223f64aed31cf39b668e05",
+  "guestSha256": "c7b2f9e8c78fd575b8bf86a289e1937f79f0394fb0223f64aed31cf39b668e05",
+  "exportedAt": "2026-09-08T10:21:58.292430+00:00",
+  "status": "passed",
+  "guestEvidence": {
+    "archiveSha256": "c7b2f9e8c78fd575b8bf86a289e1937f79f0394fb0223f64aed31cf39b668e05",
+    "archiveBytes": 179899,
+    "kernel": "6.8.0-1067-azure",
+    "packages": {
+      "certbot": "2.9.0-1",
+      "nginx": "1.24.0-2ubuntu7.17",
+      "nginx-common": "1.24.0-2ubuntu7.17",
+      "openssl": "3.0.13-0ubuntu3.15",
+      "python3-cryptography": "41.0.7-4ubuntu0.4"
+    }
+  }
+}

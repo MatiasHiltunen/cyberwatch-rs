@@ -1,0 +1,138 @@
+{
+  "recorded_at_utc": "2026-09-08T10:27:12.475624+00:00",
+  "scanner": {
+    "name": "Trivy",
+    "version": "0.74.0",
+    "platform": "windows-amd64 (ARM64 host emulation)",
+    "release_url": "https://github.com/aquasecurity/trivy/releases/tag/v0.74.0",
+    "archive_sha256": "94c40e0696e4b907a74b7b2e1438d5d72ebaca83115817407f568a002d520842",
+    "executable_sha256": "4c532e1f28f53282dc364671e87381cd77760fa9cafab143f576449c2207cdd5",
+    "database": {
+      "Version": 2,
+      "NextUpdate": "2026-09-09T07:08:01.235696486Z",
+      "UpdatedAt": "2026-09-08T07:08:01.235696926Z",
+      "DownloadedAt": "2026-09-08T09:04:41.989787343Z"
+    }
+  },
+  "scope": "Known OS vulnerabilities in the actual Azure VM installed-package inventory. Not a full filesystem, secret, runtime exploitability or running-kernel verification.",
+  "status": "failed",
+  "scanner_exit_code": 1,
+  "scanners": [
+    "vuln"
+  ],
+  "package_types": [
+    "os"
+  ],
+  "severity_gate": [
+    "HIGH",
+    "CRITICAL"
+  ],
+  "subscription_id": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "resource_group": "rg-cyberwatch-yamk-swe",
+  "vm_name": "cyberwatch-yamk",
+  "inventory_exported_at": "2026-09-08T10:21:58.292430+00:00",
+  "inventory_sha256": "c7b2f9e8c78fd575b8bf86a289e1937f79f0394fb0223f64aed31cf39b668e05",
+  "inventory_files": [
+    "etc/os-release",
+    "etc/lsb-release",
+    "var/lib/dpkg/status"
+  ],
+  "guest_evidence": {
+    "archiveSha256": "c7b2f9e8c78fd575b8bf86a289e1937f79f0394fb0223f64aed31cf39b668e05",
+    "archiveBytes": 179899,
+    "kernel": "6.8.0-1067-azure",
+    "packages": {
+      "certbot": "2.9.0-1",
+      "nginx": "1.24.0-2ubuntu7.17",
+      "nginx-common": "1.24.0-2ubuntu7.17",
+      "openssl": "3.0.13-0ubuntu3.15",
+      "python3-cryptography": "41.0.7-4ubuntu0.4"
+    }
+  },
+  "detected_os": {
+    "Family": "ubuntu",
+    "Name": "24.04"
+  },
+  "installed_packages": 680,
+  "findings_by_severity": {
+    "CRITICAL": 45,
+    "HIGH": 1504
+  },
+  "unique_cve_ids": 175,
+  "findings_by_package": {
+    "linux-azure-cloud-tools-6.8.0-1067": 173,
+    "linux-azure-headers-6.8.0-1067": 173,
+    "linux-azure-tools-6.8.0-1067": 173,
+    "linux-cloud-tools-6.8.0-1067-azure": 173,
+    "linux-cloud-tools-common": 169,
+    "linux-headers-6.8.0-1067-azure": 173,
+    "linux-modules-6.8.0-1067-azure": 173,
+    "linux-tools-6.8.0-1067-azure": 173,
+    "linux-tools-common": 169
+  },
+  "findings_with_fixed_version": 0,
+  "reported_findings_other_packages": 0,
+  "report": "azure-host-final-security-scan.json",
+  "report_sha256": "6776f90c24f44999248522737f2325392611259ef096a395b3ad4628058e7895",
+  "sbom": "azure-host-final-sbom.cdx.json",
+  "sbom_sha256": "65bac07e22c3f6bd743e388af124096dceca23c7e21498a0fe598e58b5cb842b",
+  "notes": [
+    "No findings ignored, suppressed, reclassified as false positives or accepted by a recorded human exception.",
+    "The final selected findings are 1,549 package associations for 175 unique CVEs across nine kernel-source packages. Seven Azure packages have 173 associations each, and two common utility packages have 169 each.",
+    "The maintained Azure 6.8 packages are represented in vulnerability matching. The initial EOL 6.17 package stream was not reported equivalently; raw association counts are not a before/after measure of runtime exploitability.",
+    "No fixed version is supplied for these associations in this scanner/database result. Vendor status and per-advisory applicability require continuing review.",
+    "No selected-severity findings were reported for the other inventoried OS packages, including Nginx, Certbot, OpenSSL and Python cryptography. This is not a full host filesystem, secret or exploitability scan.",
+    "Thirteen reviewed obsolete 6.17 packages were removed only after a verified LTS boot. Azure LTS metapackages/integration were retained; another ordinary LTS boot and application persistence passed.",
+    "Final inventory export was completed after explicit user approval. Guest archive and downloaded SHA-256 and byte length match."
+  ],
+  "vendor_samples": [
+    {
+      "id": "CVE-2026-53398",
+      "url": "https://ubuntu.com/security/CVE-2026-53398",
+      "observed": "Ubuntu Noble linux and linux-azure vulnerable; Noble linux-azure-6.17 end of life. Verified against the Ubuntu advisory updated 7 September 2026."
+    },
+    {
+      "id": "CVE-2026-63940",
+      "url": "https://ubuntu.com/security/CVE-2026-63940",
+      "observed": "Ubuntu Noble linux-azure-6.17 end of life. The record describes KVM/SEV behavior; per-architecture and runtime applicability needs individual assessment."
+    }
+  ],
+  "snapshot_role": "Final deployed Ubuntu host after maintained Azure LTS-kernel migration and ordinary-boot verification.",
+  "scanned_at": "2026-09-08T13:25:45.0783846+03:00",
+  "inventory_bytes": 179899,
+  "package_versions": {
+    "linux-azure-cloud-tools-6.8.0-1067": "6.8.0-1067.75",
+    "linux-azure-headers-6.8.0-1067": "6.8.0-1067.75",
+    "linux-azure-tools-6.8.0-1067": "6.8.0-1067.75",
+    "linux-cloud-tools-6.8.0-1067-azure": "6.8.0-1067.75",
+    "linux-cloud-tools-common": "6.8.0-139.139",
+    "linux-headers-6.8.0-1067-azure": "6.8.0-1067.75",
+    "linux-modules-6.8.0-1067-azure": "6.8.0-1067.75",
+    "linux-tools-6.8.0-1067-azure": "6.8.0-1067.75",
+    "linux-tools-common": "6.8.0-139.139"
+  },
+  "initial_snapshot": {
+    "status": "failed",
+    "status_file": "azure-host-initial-security-status.json",
+    "report": "azure-host-initial-security-scan.json",
+    "sbom": "azure-host-initial-sbom.cdx.json",
+    "findings_by_severity": {
+      "HIGH": 328,
+      "CRITICAL": 10
+    },
+    "unique_cve_ids": 169
+  },
+  "runtime_evidence": {
+    "report": "azure-final-runtime.json",
+    "kernel": "6.8.0-1067-azure",
+    "lts_meta": "linux-azure-lts-24.04",
+    "lts_meta_version": "6.8.0-1067.75",
+    "ordinary_boot": "passed",
+    "explicit_boot_pin": false,
+    "nfsd_loaded": false,
+    "nfs_server_port_listening": false,
+    "scope": "These observations are separate from package matching and do not waive any finding."
+  },
+  "gate_exception": null,
+  "human_residual_risk_acceptance": "not_recorded"
+}

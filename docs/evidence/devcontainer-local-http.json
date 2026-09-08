@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "checks": [
+    "GET /health: 200",
+    "GET /ready: 200",
+    "GET /: 200",
+    "GET /api/v1/items?limit=1: 200",
+    "GET /api/v1/items?limit=1&cursor=eyJ0aW1lc3RhbXAiOiIyMDI2LTA5LTAxVDEyOjAwOjAwWiIsImlkIjoiZGVtbzpuZXdzOnBhdGNoIn0: 200",
+    "GET /api/v1/items/demo%3Anews%3Apatch: 200",
+    "GET /api/v1/items?kind=cve: 200",
+    "GET /api/v1/stats: 200",
+    "GET /api/v1/sources: 200",
+    "GET /api/v1/items?kind=invalid: 400",
+    "GET /api/v1/items?cursor=invalid: 400",
+    "GET /api/v1/does-not-exist: 404",
+    "POST /api/v1/refresh: 503",
+    "GET /metrics: 200"
+  ],
+  "health": {
+    "demo_mode": true,
+    "refresh_enabled": false,
+    "status": "ok",
+    "version": "0.4.1"
+  }
+}

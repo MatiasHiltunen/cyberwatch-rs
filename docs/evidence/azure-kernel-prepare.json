@@ -1,0 +1,12 @@
+{
+  "status": "one-shot-staged",
+  "createdAt": "2026-09-08T10:00:53.449565+00:00",
+  "bootId": "22948aa6-3703-4855-9ec5-c7bb1f2ad03d",
+  "previousKernel": "6.17.0-1022-azure",
+  "targetKernel": "6.8.0-1067-azure",
+  "metaPackage": "linux-azure-lts-24.04",
+  "metaVersion": "6.8.0-1067.75",
+  "helperSha256": "782ac7eccdf8db2e7d8300b3a40132aaa450d996c9e33037841a891f055b5b80",
+  "packagesRemoved": [],
+  "rebootPerformed": false
+}

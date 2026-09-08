@@ -1,0 +1,11 @@
+{
+  "container": "artifacts",
+  "dataDiskId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourceGroups/rg-cyberwatch-yamk-swe/providers/Microsoft.Compute/disks/cyberwatch-yamk-data",
+  "fqdn": "cyberwatch-yamk-afe8ae-20260908.swedencentral.cloudapp.azure.com",
+  "ip": "135.225.83.121",
+  "storageAccount": "cywqqv6z273n7dfk",
+  "vmName": "cyberwatch-yamk",
+  "subscriptionId": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "resourceGroup": "rg-cyberwatch-yamk-swe",
+  "location": "swedencentral"
+}
