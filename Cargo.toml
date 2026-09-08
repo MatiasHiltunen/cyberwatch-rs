@@ -18,7 +18,7 @@ path = "src/main.rs"
 anyhow = "1.0"
 async-trait = "0.1"
 axum = { version = "0.8", default-features = false, features = ["http1", "json", "matched-path", "query", "tokio", "tracing"] }
-base64 = "0.22"
+base64 = "0.23"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 feed-rs = "=2.3.1"
