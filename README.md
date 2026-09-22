@@ -4,7 +4,7 @@ Cyberwatch RS is a local-first Rust server and browser dashboard that gathers cy
 
 The service runs as one executable. It schedules ingestion, normalizes and categorizes records, cross-validates CVEs, exposes a JSON API, and serves the bundled web client without a Node.js build step. Explicit offline demo mode supplies deterministic synthetic intelligence for repeatable assessment and security tests.
 
-Start with the [course map](docs/course-map.md), [assessment guide](docs/assessment-guide.md), [deployment and recovery guide](deploy/README.md), [Azure deployment runbook](docs/azure-deployment.md), [production size guide](docs/production-size.md), and [actual verification status](RELEASE_STATUS.md). The example covers both courses' technical and analytical work; personal learning, real peer review, hosted runs, and independent YAMK283 baseline evidence must still be completed by the learner.
+Start with the [Finnish course starter guide](docs/course-start-fi.md), [local secrets and Key Vault](docs/local-secrets-fi.md), [deployment and recovery guide](deploy/README.md), [Azure deployment runbook](docs/azure-deployment.md), [production size guide](docs/production-size.md), and [actual verification status](RELEASE_STATUS.md). The current course's Moodle guide is the only authority for assignments and assessment; repository examples are supporting material. The course edition and its upstream revision are identified in [COURSE_REVISION.md](COURSE_REVISION.md).
 
 ## Included in this bundle
 

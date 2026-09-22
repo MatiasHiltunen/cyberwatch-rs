@@ -21,7 +21,7 @@ The prompt record is a faithful summary, not a verbatim transcript. No secrets, 
 | Initial assumption/approach | Decision and actual reason |
 |---|---|
 | Read raw course JSON HTML directly as a large text dump | Changed to selecting module IDs and stripping HTML to compare requirements without burying important assignment details |
-| Treat one prepared repository and its security additions as completed work for both courses | Rejected; the supplied definitions require independent repositories/environments and post-baseline YAMK283 evidence |
+| Treat prepared example controls as the learner's completed personal work | Rejected: a shared project and shared files may support both courses, but each course-specific claim and personal contribution must be documented. The former separate-repository rule was removed on 2026-09-22 |
 | Preserve inherited “completed checks” as current release validation | Rejected; those historical assembly claims do not validate changed code. Current verification and unavailable checks are tracked separately |
 | Describe scheme validation as sufficient SSRF protection | Rejected; explicit destination/redirect/DNS checks plus deployment egress validation are needed. Residual platform assumptions are documented |
 | Count generated review/incident/portfolio prose as student evidence | Rejected; templates and worked examples remain labelled unperformed, with actual personal/peer decisions left to people |

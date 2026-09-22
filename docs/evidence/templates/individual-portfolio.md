@@ -6,7 +6,7 @@ One person and one course per copy. This is not a completed reflection or assess
 
 Course: PENDING (YAMK282 or YAMK283). Person/group: PENDING. Own role: PENDING. Repository/backlog/environment: PENDING. Initial immutable commit and passing run: PENDING. Main technology path and compared alternative: PENDING. Stakeholder need, success criteria, scope exclusions, sustainability implications: PENDING. Team agreement, review responsibilities, absence arrangements: PENDING.
 
-YAMK283 only: frozen source repository/commit/run; independent target repository/initial commit; permission owner and allowed test scope; starting controls and post-baseline changes: PENDING.
+Shared project evidence: source repository/commit/run; course-specific claim and exact file section; permission owner and allowed test scope; starting controls and personal contribution: PENDING. Separate repositories or environments are not required. Use the current Moodle guide for all actual assignment requirements; the sections below are optional writing prompts, not an additional checklist.
 
 Workload: available hours/week, contact/other obligations, personally owned work, peak-week reduction plan, learning gap and measurable target: PENDING. No attendance or hours are inferred from this repository.
 

@@ -1,5 +1,15 @@
 # Develop in a container
 
+Kurssipaketin suomenkieliset ohjeet: [miten sovellus toimii ja miksi kontrollit ovat mukana](../docs/course-start-fi.md) sekä [paikalliset salaisuudet ja kehityksen Key Vault](../docs/local-secrets-fi.md).
+
+This course edition adds the Azure CLI Feature (1.3.0, resolved digest in
+`devcontainer-lock.json`). Azure authentication is explicit and opt-in; the host's
+`.azure` directory is not mounted. No cloud access is needed for offline demo work.
+The CLI package version is recorded during validation; the Feature does not pin
+all transitive operating-system packages. `.gitattributes` keeps source and scripts
+at LF on Windows hosts as well as Linux, so the shared checkout passes Rust's
+newline-sensitive formatting check inside the container.
+
 Install Docker and the VS Code **Dev Containers** extension, open the Cyberwatch
 project folder, and run **Dev Containers: Reopen in Container**. Initial setup needs
 network access to download the images, system packages, Python dependency and locked
