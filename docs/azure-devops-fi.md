@@ -8,16 +8,48 @@ palautukset ovat edelleen vain Moodlen kurssioppaassa.
 
 ## Käyttöönoton tila 22.9.2026
 
-CI/CD-koodi on valmisteltu, mutta **Azure-julkaisut ovat aluksi poissa käytöstä**
-(`enableDeployments: false`). Stagingin `storageAccount` on tarkoituksella `null`,
-kunnes infrastruktuurin luonti palauttaa sen todellisen nimen. Julkaisuskripti
-kieltäytyy käyttämästä keskeneräistä kohdetta.
+Azure CLI:llä vahvistettu kohdetilaus on **LapinAMK-Student-YAMKDevops-SANDBOX**
+(`afe8ae0d-d866-47a9-bc56-e1f4475e6cc6`). Toteutus on Azure Reposin
+`codex/azure-devops-cicd`-haarassa ja [luonnosmuotoisessa pull requestissa 1](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_git/cyberwatch-rs/pullrequest/1).
+Sitä ei ole vielä yhdistetty `main`-haaraan.
 
-Azure DevOpsiin tuodun repositorion oletushaara korjattiin Dependabot-haarasta
-`main`-haaraksi. Tarkastuksessa projektissa ei ollut palveluyhteyksiä tai
-deployment environment -ympäristöjä. Azure-tilin resurssioikeuksista puuttuu
-`Microsoft.Authorization/roleAssignments/write`; pipeline-identiteettien roolit
-on myönnettävä erikseen siihen oikeutetulla tilillä.
+- [Sovelluksen CI-ajo 8](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_build/results?buildId=8&view=results)
+  onnistui commitilla `1aa278a`: Quality-, Security- ja ARM64-jobit läpäisivät
+  tarkistukset. Mukana olivat 57 Python-testiä, Rust-tarkistukset, HTTP-testit,
+  Semgrep, Trivy sekä oikean ARM64-konttikuvan rakentaminen, skannaus ja
+  käynnistystesti QEMUlla. Julkaisuartefakti julkaistiin putken artefakteihin.
+- [IaC:n validointiajo 7](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_build/results?buildId=7&view=results)
+  onnistui commitilla `a03c648`: 15 IaC-testiä, molempien Bicep-mallien käännös
+  lukitulla versiolla `0.43.8` ja Trivy-tarkistus.
+- Olemassa olevaan tuotantoon tehty paikallinen, Azure CLI:llä tunnistautunut
+  what-if-suunnitelma onnistui commitilla `45d3006`. Kahdeksalle hallitulle
+  resurssille ei löytynyt toteutettavia muutoksia. Kolme palvelun laskennallista
+  tai vain luettavaa ominaisuuseroa kirjattiin `NoEffect`-havainnoiksi.
+  Tämä oli suunnittelukoe; apply-vaihetta ei ajettu.
+- DevOps-ympäristöt `cyberwatch-staging` ja `cyberwatch-production` on luotu.
+  Molemmissa on exclusive lock ja käyttöoikeus vain putkille `Cyberwatch-CICD`
+  (2) sekä `Cyberwatch-Infrastructure` (3). Tuotantoympäristössä on lisäksi
+  Matias Hiltusen hyväksyntä. Nykyinen asetus sallii hyväksyjän hyväksyä myös
+  itse käynnistämänsä ajon; kyseessä ei ole kahden henkilön hyväksyntämalli.
+- Repositorion oletushaara on `main`. Haaran vaaditut build validation
+  -käytännöt suorittavat sovelluksen CI:n ja IaC-tiedostoja muutettaessa
+  infrastruktuurin validoinnin. Ihmisen PR-katselmoinnin vaatimus ja
+  tuotantotagien luontioikeuksien rajaus on vielä määritettävä.
+
+**Azure-julkaisut ovat edelleen poissa käytöstä** (`enableDeployments: false`).
+Stagingin resurssiryhmä on luotu, mutta se on tyhjä. Stagingin VM:ää, neljää
+managed identityä tai niiden WIF-palveluyhteyksiä ei ole luotu. Stagingin
+`storageAccount` on tarkoituksella `null`, kunnes luonti palauttaa todellisen
+nimen. Nykyistä tuotantosovellusta ei ole muutettu tämän käyttöönoton yhteydessä.
+
+Identiteettien, federointien, palveluyhteyksien ja laskutettavan stagingin
+käyttöönotto odottaa nimettyjen resurssien hyväksyntää. Lisäksi Azure-tilin
+oikeuksista puuttuu `Microsoft.Authorization/roleAssignments/write`;
+pipeline-identiteettien roolit on myönnettävä erikseen siihen oikeutetulla
+tilillä. Myös palveluyhteyksien omat käyttörajaukset ja hyväksynnät on tehtävä
+ennen aktivointia. Ympäristön hyväksyntä yksin ei suojaa palveluyhteyden käyttöä
+muokatusta YAML-tiedostosta. [Päivätty tarkistusnäyttö](evidence/azure-devops-setup-20260922.json)
+erittelee kokeillut ja vielä kokeilematta olevat vaiheet.
 
 CI:n `verifyReleaseArtifact: true` mahdollistaa ARM64-kuvan rakentamisen ja
 testaamisen työhaarasta ennen yhdistämistä. Se ei julkaise työhaaraa Azureen:
@@ -26,10 +58,6 @@ ylläpidolle on [oma IaC-putki ja ohje](azure-iac-fi.md). Se käyttää erillisi
 identiteettejä, jotta sovelluksen julkaisu ei saa oikeutta muuttaa verkkoa tai
 tallennustilin määrityksiä. Kaikkien neljän identiteetin nimet ja oikeusrajat ovat
 [koneellisesti luettavassa käyttöönottosuunnitelmassa](../deploy/azure/access-plan.json).
-
-Automaattinen hyväksyntätarkistus esti managed identityjen, federointien ja
-palveluyhteyksien luomisen ennen erillistä, kohteet ja oikeuksien laajuuden
-nimeävää hyväksyntää. Nykyiseen Azure-sovellukseen ei tehty CI/CD-muutosta.
 
 ## Haarat, tagit ja sama julkaisupaketti
 
@@ -63,21 +91,23 @@ julkaisun hallinnan. [Microsoft: approvals and checks](https://learn.microsoft.c
 
 ## Azure-yhteys ja täsmällinen oikeusraja
 
-Käytä kahta **user-assigned managed identityä** ja **workload identity federation**
--palveluyhteyttä. Entra-sovellusrekisteröintiä tai pitkäikäistä client secretia ei
+Sovelluksen julkaisu käyttää kahta **user-assigned managed identityä** ja
+**workload identity federation** -palveluyhteyttä. IaC-putkella on lisäksi
+[kaksi omaa identiteettiä ja yhteyttä](azure-iac-fi.md#kohteet-ja-vastuut).
+Entra-sovellusrekisteröintiä tai pitkäikäistä client secretia ei
 tarvita. Federationin `issuer` ja `subject` otetaan juuri luodun DevOps-yhteyden
 vastauksesta; niitä ei päätellä organisaation nimestä. [Microsoft: manual WIF setup](https://learn.microsoft.com/en-us/azure/devops/pipelines/release/configure-workload-identity?view=azure-devops).
 
-Suunnitellut, vielä hyväksyntää odottavat kohteet tilauksessa
+Sovelluksen julkaisun kohteet tilauksessa
 `afe8ae0d-d866-47a9-bc56-e1f4475e6cc6`:
 
 | Kohde | Staging | Tuotanto |
 | --- | --- | --- |
-| Resurssiryhmä | `rg-cyberwatch-staging-swe` | nykyinen `rg-cyberwatch-yamk-swe` |
+| Resurssiryhmä | luotu, tyhjä `rg-cyberwatch-staging-swe` | nykyinen `rg-cyberwatch-yamk-swe` |
 | VM | uusi `cyberwatch-staging` | nykyinen `cyberwatch-yamk` |
 | Identity | `id-cyberwatch-ado-staging` | `id-cyberwatch-ado-prod` |
 | Service connection | `cyberwatch-staging-wif` | `cyberwatch-prod-wif` |
-| DevOps environment | `cyberwatch-staging` | `cyberwatch-production` |
+| DevOps environment | luotu `cyberwatch-staging` | luotu `cyberwatch-production` |
 
 Kummallekin identiteetille myönnetään vain oman ympäristön oikeudet:
 
@@ -121,13 +151,16 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
    ensimmäistä roolimääritystä. Ilman `--apply`-valintaa se vain lukee ja tulostaa
    kuusi määritystä. Azure CLI:hin kirjautuneella tilillä on oltava oikeus
    `Microsoft.Authorization/roleAssignments/write` näissä kohteissa.
-5. Luo DevOps-ympäristöt. Salli kummankin environmentin ja service connectionin
-   käyttö vain Cyberwatchin nimetylle pipeline-määritykselle. **Grant access
-   permission to all pipelines** jätetään pois. Tuotantoon lisätään opettajan
-   hyväksyntä YAML:n ulkopuolella sekä ympäristöön että palveluyhteyteen.
-   Ympäristöihin lisätään exclusive lock, jotta samanaikaiset julkaisut eivät kilpaile.
-6. Suojaa `main`: vaadittu build validation ja katselmointi, ei yleistä policy bypass
-   -oikeutta. Rajaa tuotantotagien luonti ja force push -oikeudet julkaisusta
+5. Tarkista jo luodut DevOps-ympäristöt: vain putket 2 ja 3 saavat käyttää niitä,
+   molemmissa on exclusive lock ja tuotannossa opettajan hyväksyntä.
+   Rajaa jokainen sovelluksen palveluyhteys vain putkelle 2 ja jokainen IaC-yhteys
+   vain putkelle 3. **Grant access permission to all pipelines** jätetään pois.
+   Lisää tuotannon molempiin palveluyhteyksiin opettajan hyväksyntä YAML:n
+   ulkopuolella. Yhteinen ympäristölukko estää sovelluksen ja IaC:n samanaikaiset
+   muutokset samassa ympäristössä.
+6. Tarkista `main`-haaran jo luodut build validation -käytännöt ja lisää
+   katselmointivaatimus. Varmista, ettei yleistä policy bypass -oikeutta ole
+   annettu. Rajaa tuotantotagien luonti ja force push -oikeudet julkaisusta
    vastaaville. Varmista erikseen, kuka saa muuttaa approval/check-asetuksia.
 7. Tarkista Azure Pipelines -agenttikapasiteetti. YAML käyttää `ubuntu-24.04`
    -agenttia. AMD64-agentti kääntää ARM64-sovelluksen omalla suorittimellaan
@@ -163,6 +196,10 @@ Jos uusi kuva ei tule valmiiksi ja tietokannan skeema on ennallaan, päivittäj�
 palauttaa edellisen kuvan ja varmistaa sen terveystarkistuksen. Putki jää silti
 epäonnistuneeksi. Jos skeema muuttui, palvelu jätetään pysäytetyksi ja ylläpitäjä
 palauttaa yhteensopivan version ja tarvittaessa varmuuskopion runbookin avulla.
+Päivittäjä pysäyttää myös terveystarkistuksen ajastimen ja mahdollisen käynnissä
+olevan tarkistuksen muutoksen ajaksi. Se nollaa systemd-palvelun käynnistysyritysten
+rajoituksen ennen vanhan kuvan käynnistystä ja palauttaa seurannan vasta
+toimivaksi varmistetulle versiolle.
 Skeeman vertailu ei tunnista kaikkia tiedon merkityksen muutoksia: tietomigraatiot
 vaativat erillisen suunnitelman ja testin. [Päivityskoodi](../deploy/azure/update_runtime.py)
 ei alusta levyä, vaihda salaisuuksia tai päivitä käyttöjärjestelmän paketteja.

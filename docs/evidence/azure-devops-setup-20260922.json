@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "observedAtUtc": "2026-09-22T15:00:21.218263+00:00",
+  "subscription": {
+    "name": "LapinAMK-Student-YAMKDevops-SANDBOX",
+    "id": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+    "tenantId": "b8c233ff-e775-47a9-8869-74e44d42fe37",
+    "verification": "az account show"
+  },
+  "azureRepos": {
+    "organization": "https://dev.azure.com/DevOpsYAMKOpenDemo",
+    "project": "DevOpsDemo",
+    "repository": "cyberwatch-rs",
+    "branch": "codex/azure-devops-cicd",
+    "pullRequest": 1,
+    "pullRequestIsDraft": true,
+    "mergedToMain": false
+  },
+  "azureBuilds": [
+    {
+      "id": 8,
+      "status": "completed",
+      "result": "succeeded",
+      "sourceVersion": "1aa278a45b0537903a17fc0534bdf7e23ed6aae4",
+      "sourceBranch": "refs/heads/codex/azure-devops-cicd",
+      "startTime": "2026-09-22T14:36:39.8173956Z",
+      "finishTime": "2026-09-22T14:45:42.7356375Z",
+      "definition": "Cyberwatch-CICD",
+      "jobs": [
+        {
+          "name": "ARM64",
+          "state": "completed",
+          "result": "succeeded"
+        },
+        {
+          "name": "Quality",
+          "state": "completed",
+          "result": "succeeded"
+        },
+        {
+          "name": "Security",
+          "state": "completed",
+          "result": "succeeded"
+        }
+      ],
+      "url": "https://dev.azure.com/DevOpsYAMKOpenDemo/01ad21b7-bfab-4043-bda1-f8a29e8ce4ec/_build/results?buildId=8"
+    },
+    {
+      "id": 7,
+      "status": "completed",
+      "result": "succeeded",
+      "sourceVersion": "a03c6487afd0991a6ff9a1c15b27e34251600c44",
+      "sourceBranch": "refs/heads/codex/azure-devops-cicd",
+      "startTime": "2026-09-22T14:35:53.957569Z",
+      "finishTime": "2026-09-22T14:36:35.9008638Z",
+      "definition": "Cyberwatch-Infrastructure",
+      "jobs": [
+        {
+          "name": "InfrastructureChecks",
+          "state": "completed",
+          "result": "succeeded"
+        }
+      ],
+      "url": "https://dev.azure.com/DevOpsYAMKOpenDemo/01ad21b7-bfab-4043-bda1-f8a29e8ce4ec/_build/results?buildId=7"
+    }
+  ],
+  "githubBuild": {
+    "id": 35741364342,
+    "commit": "1aa278a45b0537903a17fc0534bdf7e23ed6aae4",
+    "result": "success",
+    "jobs": [
+      "quality",
+      "container",
+      "security"
+    ],
+    "url": "https://github.com/MatiasHiltunen/cyberwatch-rs/actions/runs/35741364342"
+  },
+  "productionPlan": {
+    "mode": "local Azure CLI authenticated read-only what-if",
+    "commit": "45d3006b390e2dd139717943f25217f9f6deebb3",
+    "resourceGroup": "rg-cyberwatch-yamk-swe",
+    "managedResources": 8,
+    "meaningfulChanges": 0,
+    "noEffectObservations": 3,
+    "applyExecuted": false,
+    "sources": {
+      "deploy/azure/steady-state.bicep": "4248f3c70d89c3944d02ea3618cf35c5ea6e68dce59d3f3b30c2a61f1e603db7",
+      "deploy/azure/targets.json": "8a56e85728a34576a9261482128f604356d5ac3151eab7b2f1f3d1eb2a7c3835",
+      "tools/ado_infra.py": "fc702cf519425b65c5176533b6dd5701c85c312bfe407bac49c1376c775d59bf"
+    },
+    "whatIfSha256": "2f89b90df8cf26913440aa92aea937ea3ea4e18a46597c3544cbab67e200132c",
+    "evidenceFile": "azure-iac-prod-what-if-20260922.json"
+  },
+  "devopsEnvironments": [
+    {
+      "environment": "cyberwatch-staging",
+      "id": 1,
+      "authorizedPipelines": [
+        2,
+        3
+      ],
+      "activeChecks": [
+        {
+          "id": 4,
+          "type": "2ef31ad6-baa0-403a-8b45-2cbc9b4e5563"
+        }
+      ]
+    },
+    {
+      "environment": "cyberwatch-production",
+      "id": 2,
+      "authorizedPipelines": [
+        2,
+        3
+      ],
+      "activeChecks": [
+        {
+          "id": 5,
+          "type": "2ef31ad6-baa0-403a-8b45-2cbc9b4e5563"
+        },
+        {
+          "id": 6,
+          "type": "8c6f20a7-a545-4486-9777-f762fafe0d4d"
+        }
+      ]
+    }
+  ],
+  "productionApproval": {
+    "approver": "Matias Hiltunen",
+    "minimumApprovers": 1,
+    "requesterCanApproveOwnRun": true,
+    "resource": "environment",
+    "serviceConnectionApprovalConfigured": false
+  },
+  "mainBuildPolicies": [
+    {
+      "id": 1,
+      "isEnabled": true,
+      "isBlocking": true,
+      "settings": {
+        "buildDefinitionId": 2,
+        "queueOnSourceUpdateOnly": false,
+        "manualQueueOnly": false,
+        "displayName": "Cyberwatch application CI",
+        "validDuration": 0.0,
+        "scope": [
+          {
+            "refName": "refs/heads/main",
+            "matchKind": "Exact",
+            "repositoryId": "369a248b-ba7a-4623-b4e8-a63a01c2b6cc"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "isEnabled": true,
+      "isBlocking": true,
+      "settings": {
+        "buildDefinitionId": 3,
+        "queueOnSourceUpdateOnly": false,
+        "manualQueueOnly": false,
+        "displayName": "Cyberwatch infrastructure validation",
+        "validDuration": 0.0,
+        "scope": [
+          {
+            "refName": "refs/heads/main",
+            "matchKind": "Exact",
+            "repositoryId": "369a248b-ba7a-4623-b4e8-a63a01c2b6cc"
+          }
+        ],
+        "filenamePatterns": [
+          "/deploy/azure/*",
+          "/tools/ado_infra.py",
+          "/tools/test_ado_infra.py",
+          "/tools/install_bicep.sh",
+          "/azure-infra.yml"
+        ]
+      }
+    }
+  ],
+  "azureDeploymentState": {
+    "enableDeployments": false,
+    "stagingResourceGroupExists": true,
+    "stagingResourceCount": 0,
+    "stagingResourceCountVerification": "az resource list --resource-group rg-cyberwatch-staging-swe",
+    "newManagedIdentitiesCreated": false,
+    "serviceConnectionCount": 0,
+    "stagingStorageAccountConfigured": false,
+    "productionChangedByThisSetup": false,
+    "currentAccountCanAssignRbacRoles": false
+  },
+  "notYetVerified": [
+    "managed identity workload identity federation login",
+    "service connection RBAC access",
+    "staging bootstrap and application deployment",
+    "IaC Plan and Apply from Azure Pipelines",
+    "tag-based production promotion",
+    "failure recovery on the live VM"
+  ],
+  "remainingSetup": [
+    "named-resource approval for staging and identities in deploy/azure/access-plan.json",
+    "create staging resources and four managed identities",
+    "configure four federated service connections and dedicated pipeline permissions",
+    "authorized administrator grants scoped Azure RBAC roles",
+    "protect production service connections with teacher approvals",
+    "complete human PR review and production tag permission restrictions",
+    "merge and enable deployments only after the preceding configuration",
+    "verify staging, IaC and production promotion with actual Azure Repos runs"
+  ]
+}

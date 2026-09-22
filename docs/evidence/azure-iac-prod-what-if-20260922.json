@@ -1,0 +1,62 @@
+{
+  "changes": [
+    {
+      "changeType": "NoChange",
+      "delta": [
+        {
+          "path": "properties.diskIOPSReadWrite",
+          "propertyChangeType": "NoEffect",
+          "reason": "standard-ssd-computed-performance"
+        },
+        {
+          "path": "properties.diskMBpsReadWrite",
+          "propertyChangeType": "NoEffect",
+          "reason": "standard-ssd-computed-performance"
+        }
+      ],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.compute/disks/cyberwatch-yamk-data"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.network/networksecuritygroups/cyberwatch-yamk-nsg"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.network/publicipaddresses/cyberwatch-yamk-ip"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.network/virtualnetworks/cyberwatch-yamk-vnet"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [
+        {
+          "path": "properties.encryption.services",
+          "propertyChangeType": "NoEffect",
+          "reason": "azure-read-only"
+        }
+      ],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.storage/storageaccounts/cywqqv6z273n7dfk"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.storage/storageaccounts/cywqqv6z273n7dfk/blobservices/default"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.storage/storageaccounts/cywqqv6z273n7dfk/blobservices/default/containers/artifacts"
+    },
+    {
+      "changeType": "NoChange",
+      "delta": [],
+      "resourceId": "/subscriptions/afe8ae0d-d866-47a9-bc56-e1f4475e6cc6/resourcegroups/rg-cyberwatch-yamk-swe/providers/microsoft.storage/storageaccounts/cywqqv6z273n7dfk/managementpolicies/default"
+    }
+  ],
+  "status": "Succeeded"
+}
