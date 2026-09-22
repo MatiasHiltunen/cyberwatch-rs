@@ -495,7 +495,9 @@
     },
     "httpsVerificationFile": "azure-staging-live-20260922.json",
     "rebootPersistenceFile": "azure-staging-persistence-20260922.json",
-    "qualifiesAsMainPipelineStagingRun": false
+    "qualifiesAsMainPipelineStagingRun": false,
+    "firstLiveVerificationFile": "azure-staging-bootstrap-live-20260922.json",
+    "imageIdentityNote": "release.imageConfigId is the SHA-256 of the original Docker-save configuration bytes. runtime.containerImageId is the loaded Docker engine image identifier and can differ with the image store. install-runtime.sh verifies the archive configuration digest, then compares the loaded Config and RootFS layers before recording the runtime identifier."
   },
   "stagingPlan": {
     "mode": "local Azure CLI authenticated read-only what-if",

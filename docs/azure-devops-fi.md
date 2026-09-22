@@ -31,8 +31,8 @@ Sitä ei ole vielä yhdistetty `main`-haaraan.
   HTTPS-, autentikointi-, readiness- ja verkkorajauksen tarkistukset onnistuivat.
   Käyttöjärjestelmän päivitysten jälkeen tehty oikea uudelleenkäynnistys säilytti
   tietokannan ehjänä, ja palvelut käynnistyivät automaattisesti. Sovellus käyttää
-  omaa tietokantaa ja omia salaisuuksia. Ensimmäisellä
-  tiedonhakukierroksella 29 lähdettä 38:sta onnistui; yhdeksän lähteen haku epäonnistui.
+  omaa tietokantaa ja omia salaisuuksia. [Ensimmäisellä tiedonhakukierroksella](evidence/azure-staging-bootstrap-live-20260922.json)
+  29 lähdettä 38:sta onnistui; yhdeksän lähteen haku epäonnistui.
   Toimiva readiness ei tarkoita, että kaikki ulkopuoliset tietolähteet toimivat.
   Bootstrap on ylläpitäjän käyttöönottotoimi: se ei korvaa tuotantotagin vaatimaa
   onnistunutta `main`-haaran `DeployStaging`-vaihetta.
@@ -169,7 +169,8 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
    application-only-julkaisua. Älä aja stagingin luontia tuotannon nimillä.
 3. Tallenna palautunut tallennustilin nimi `deploy/azure/targets.json`-tiedostoon.
    Älä tuo tuotannon tietokantaa, admin-tokenia tai reader-salasanaa stagingiin.
-4. Luo kaksi identityä ja DevOps-yhteysluonnosta. Lisää kummankin yhteyden oma
+4. Luo sovelluksen kaksi identityä ja palveluyhteyttä. Pidä palveluyhteyksien
+   pipeline-käyttö estettynä roolien varmentamiseen asti. Lisää kummankin yhteyden oma
    federated credential kyseiseen identityyn. Azure-roolien myöntämiseen oikeutettu
    ylläpitäjä lisää kolme yllä kuvattua resurssikohtaista roolia.
    Federation hoitaa tunnistautumisen; se ei myönnä RBAC-oikeuksia. Resurssien
@@ -180,6 +181,9 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
    ensimmäistä roolimääritystä. Ilman `--apply`-valintaa se vain lukee ja tulostaa
    kuusi määritystä. Azure CLI:hin kirjautuneella tilillä on oltava oikeus
    `Microsoft.Authorization/roleAssignments/write` näissä kohteissa.
+   Kun mukana on myös IaC-putki, luo lisäksi sen kaksi identiteettiä ja yhteyttä
+   ja käytä [ylläpitäjän 12 roolin yhteistä ohjetta](azure-rbac-handoff-fi.md)
+   (`--purpose all`). IaC-yhteyksien käyttöä ei avata pelkkien sovellusroolien perusteella.
 5. Tarkista jo luodut DevOps-ympäristöt: vain putket 2 ja 3 saavat käyttää niitä,
    molemmissa on exclusive lock ja tuotannossa opettajan hyväksyntä.
    Rajaa jokainen sovelluksen palveluyhteys vain putkelle 2 ja jokainen IaC-yhteys
