@@ -8,7 +8,35 @@ Sovellukselle on hyödyllistä tarjota sama salaisuuden lukurajapinta eri ympär
 
 **Paikallinen sovellus ja kehityksen Key Vault:** kehittäjä kirjautuu omalla Entra-tunnuksellaan ja hakee erillisen kehityssalaisuuden oikeasta Azure Key Vaultista. Sovellus käyttää siitä tehtyä paikallista kopiota. Tässä voidaan testata oikeaa pilvipääsyä, mutta kehittäjän tunnus ei ole Azure-VM:n managed identity.
 
-**Azure-ajoympäristö:** sovelluksen tai sille erikseen suunnitellun salaisuusagentin managed identity hakee salaisuuden. Container Apps tukee Key Vault -viitettä. Cyberwatchin nykyisessä VM-toteutuksessa vastaavaa hakua ei ole; sen hallintatoken on VM:n paikallinen tiedosto. [Microsoft: Key Vault -tunnistautuminen](https://learn.microsoft.com/en-us/azure/key-vault/general/authentication), [Container Apps -viitteet](https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets).
+**Azure-ajoympäristö:** Key Vault -toteutuksessa sovelluksen tai salaisuusagentin managed identity hakee salaisuuden. Container Apps tukee myös omaa Secrets-toimintoa ilman Key Vaultia. Cyberwatchin nykyinen VM-toteutus käyttää paikallista salaisuustiedostoa; se ei tee Key Vault -hakua. [Microsoft: Key Vault -tunnistautuminen](https://learn.microsoft.com/en-us/azure/key-vault/general/authentication), [Container Appsin vaihtoehdot](https://learn.microsoft.com/en-us/azure/container-apps/manage-secrets).
+
+<a id="ilman-key-vaultia"></a>
+## Vaihtoehto ilman Key Vaultia: suojattu salaisuustiedosto
+
+Tiedostomallissa sovellus saa käyttöönsä erillisen tiedoston, johon tallennetaan vain harjoitustoken. Koodi ja versionoidut asetukset sisältävät tiedostopolun. Tämä toimii myös silloin, kun Azure-oikeudet eivät riitä Key Vaultin RBAC-roolien myöntämiseen. Kurssilla hyväksyttävät toteutustavat ja näytöt on määritelty T4-tehtävänannossa (opintojakson Moodlen Kurssiopas ja oppimateriaalit).
+
+**Dev Containerissa** alla olevan offline-ohjeen apuri luo tokenin käyttäjän kotihakemistoon. Sovellus ja apuri toimivat samalla käyttäjällä, joten tiedoston oikeus `0600` riittää. Pilvipalvelua tai kirjautumista ei tarvita.
+
+**Docker Composella** Cyberwatchin mukana tuleva määritys liittää tokenin vain `cyberwatch`-palveluun polkuun `/run/secrets/admin-token`. Tee seuraava Linux-isännällä tai WSL:n Linux-tiedostojärjestelmässä projektin juuressa. Dockerin tulee olla käytettävissä siinä ympäristössä; Dev Containerin sisällä sitä ei ole oletuksena:
+
+```sh
+python3 tools/create_admin_secret.py
+docker compose up --build -d
+```
+
+Luo tiedosto vain ensimmäisellä käyttökerralla: apuri kieltäytyy korvaamasta olemassa olevaa tokenia. Se suojaa isännän `secrets`-hakemiston oikeuksilla `0700`. Tiedoston oikeus on tässä `0644`, jotta kontin eri käyttäjätunnuksella toimiva prosessi voi lukea liitetyn tiedoston. Isännällä muiden tavallisten käyttäjien pääsyn estää ylemmän hakemiston `0700`. Älä kopioi tiedostoa yleisesti luettavaan hakemistoon. Windowsin NTFS-käyttöoikeudet vaativat erillisen ACL-tarkastelun; nämä Linux-oikeudet eivät kuvaa niitä. [Projektin luontiapuri](https://github.com/MatiasHiltunen/cyberwatch-rs/blob/9550b4bc1da2b8bb2eb67accbfe88804522d8781/tools/create_admin_secret.py).
+
+Compose käyttää paikalliseen tiedostoon perustuvaa liitosta (*bind mount*). Se ei tee isännän tiedostosta salattua salaisuussäilöä. `_FILE` toimii tässä, koska Cyberwatchin koodi tukee sitä; se ei ole kaikkien sovellusten automaattinen ominaisuus. [Docker: Compose secrets](https://docs.docker.com/compose/how-tos/use-secrets/).
+
+**Omalla Azure-VM:llä** samaa mallia voi käyttää ilman Key Vaultia. Tarkastettu Cyberwatchin käyttöönottokoodi luo tokenin `/etc/cyberwatch/secrets`-hakemistoon ja liittää sen konttiin vain lukuun. Tarkastetussa ympäristössä hakemisto oli rootin `0700`, tiedosto `root:root` ja `0640`, ja kontti käytti tunnuksia `10001:0`. Siksi kontin prosessi pystyi lukemaan liitetyn tiedoston ryhmäoikeudella. Nämä ovat kyseisen toteutuksen asetuksia, eivät yleispäteviä oikeuksia jokaiseen konttiin. [Käyttöönottokoodi](https://github.com/MatiasHiltunen/cyberwatch-rs/blob/9550b4bc1da2b8bb2eb67accbfe88804522d8781/deploy/azure/configure-runtime.py).
+
+### Miksi malli suojaa ja mitä se ei ratkaise?
+
+Salaisuus jää lähdekoodin, konttikuvan ja käynnistyskomennon ulkopuolelle. Tiedostooikeudet rajaavat tavallisten käyttäjien pääsyä, ja vain lukuun tehty liitos estää sovellusta muuttamasta kyseistä tiedostoa. Sovellus pystyy kuitenkin lukemaan tokenin: sovelluksen haltuunotto voi paljastaa sen. Myös root ja Docker-ylläpitäjä kuuluvat luottamusrajan sisälle. Pelkkä `.gitignore` ei ole käyttöoikeussuoja.
+
+Vaihto on tässä mallissa ylläpitäjän tehtävä. Suunnittele rajatussa harjoitusympäristössä uuden satunnaisen tokenin luonti, tiedoston turvallinen korvaaminen samoilla oikeuksilla ja sovelluksen uudelleenkäynnistys. Cyberwatch lukee tokenin käynnistyessään. Jos Compose-tiedoston lähdetiedosto korvataan uudella tiedostolla, luo myös kontti uudelleen komennolla `docker compose up -d --force-recreate cyberwatch`, jotta liitos osoittaa uuteen tiedostoon. Päivitä myös tokenia käyttävä asiakas. Tavallinen käynnistys tai paikallisen apurin uudelleenajo ei itsessään kierrätä tokenia.
+
+Tallenna vaihdon ajankohta, vastuuhenkilö ja kokeiden tulokset ilman tokenia. Ratkaisu ei sellaisenaan tarjoa keskitettyä salaisuuksien versiohistoriaa, hakujen auditointia tai automaattista kiertoa. Arvioi nämä rajat oman uhkamallin perusteella. Dev Containerin offline-tila ei myöskään todista ulkoisen tietolähteen tai pilven käyttöoikeuksien toimivuutta.
 
 ## 1. Offline-kehitys Dev Containerissa
 
@@ -62,6 +90,6 @@ Key Vaultin käyttöoikeuden poistaminen estää tulevia hakuja, mutta **ei mit�
 
 ## Cyberwatchin VM:n myöhempi Key Vault -integraatio
 
-Nykytilan puute on tunnistettu; seuraava on toteutussuunnitelma, ei väite valmiista integraatiosta. Käyttöönotossa valitaan sovelluksen oma managed identity ja annetaan sille tarvittava Key Vault -lukuoikeus. Sovellus voidaan muuttaa lukemaan salaisuus tuetulla Azure-kirjastolla tai VM:lle voidaan suunnitella erillinen, hallittu hakuvaihe ennen palvelun käynnistystä. Molemmissa pitää määritellä verkon pääsy, käynnistyksen virhekäyttäytyminen, paikallisen kopion oikeudet, kierto, uudelleenkäynnistys ja lokitus.
+Jos uhkamalli edellyttää keskitettyä salaisuuksien hallintaa, tiedostomallia voi täydentää Key Vaultilla. Seuraava on jatkokehityksen suunnitelma, ei väite valmiista integraatiosta. Käyttöönotossa valitaan sovelluksen oma managed identity ja annetaan sille tarvittava Key Vault -lukuoikeus. Sovellus voidaan muuttaa lukemaan salaisuus tuetulla Azure-kirjastolla tai VM:lle voidaan suunnitella erillinen, hallittu hakuvaihe ennen palvelun käynnistystä. Molemmissa pitää määritellä verkon pääsy, käynnistyksen virhekäyttäytyminen, paikallisen kopion oikeudet, kierto, uudelleenkäynnistys ja lokitus.
 
 Arvioi myös luottamusraja: VM:n identiteettiä käyttävä prosessi ei automaattisesti ole eristetty muista samalla VM:llä ajettavista prosesseista. Key Vault ei estä sovellusta käyttämästä sille tarkoituksella annettua salaisuutta väärin. Testaa sallittu haku, kielletty haku ja vanhan tokenin hylkääminen omassa kehitysympäristössä ennen julkisen palvelun muutosta. [Microsoft: managed identity -turvallisuus](https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/managed-identities-faq).

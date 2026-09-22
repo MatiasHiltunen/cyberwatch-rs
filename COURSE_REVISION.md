@@ -1,8 +1,10 @@
-# Kurssipaketin versio 2026.09.22.2
+# Kurssipaketin versio 2026.09.22.3
 
 Upstream: https://github.com/MatiasHiltunen/cyberwatch-rs
 
-Tarkastettu commit: `9550b4bc1da2b8bb2eb67accbfe88804522d8781`.
+Sovelluksen tarkastettu pohja: `9550b4bc1da2b8bb2eb67accbfe88804522d8781`.
+Julkaistu kehitysympäristö- ja materiaalitäydennys: `87dd30da3ceac714545d65d95548bcb15236c7eb`.
+Versio 2026.09.22.3 täydentää ohjeeseen Key Vaultista riippumattoman tiedostovaihtoehdon.
 
 Kurssitäydennys sisältää suomenkieliset toiminta- ja turvallisuusperustelut,
 Azure CLI:n Dev Containerissa, LF-rivinvaihtokäytännön sekä kehityssalaisuuden
@@ -18,5 +20,6 @@ resursseja tai rooleja eikä toteuta VM:n tuotantointegraatiota.
 Yksityiskohtainen tämän muutoksen testiraportti toimitetaan opettajan
 kurssilähteen `CYBERWATCH_REVIEW.md`-tiedostossa. Repositorion vanhat
 `RELEASE_STATUS.md` ja `docs/evidence` kuvaavat niihin kirjattuja aiempia ajoja,
-eivätkä korvaa kurssitäydennyksen tarkistuksia. GitHubin upstreamiin ei ole
-julkaistu tätä paikallista kurssitäydennystä.
+eivätkä korvaa kurssitäydennyksen tarkistuksia. Paketin tarkat tiedostotiivisteet
+ja GitHubissa julkaistun version päälle tehdyt muutokset löytyvät kurssilähteen
+pakettiraportista ja patch-tiedostosta.
