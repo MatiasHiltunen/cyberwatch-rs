@@ -130,10 +130,17 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
    -oikeutta. Rajaa tuotantotagien luonti ja force push -oikeudet julkaisusta
    vastaaville. Varmista erikseen, kuka saa muuttaa approval/check-asetuksia.
 7. Tarkista Azure Pipelines -agenttikapasiteetti. YAML käyttää `ubuntu-24.04`
-   -agenttia ja ARM64-kuvan rakentamiseen QEMU-emulointia. Se voi olla hidas ja
-   ylittää vapaan agenttiajon aikarajan; silloin tarvitaan eristetty, vain
-   luotetuille koonneille tarkoitettu ARM64-build-agentti tai muu sopiva kapasiteetti.
-   Sovelluksen tuotanto-VM:ää ei käytetä build-agenttina.
+   -agenttia. AMD64-agentti kääntää ARM64-sovelluksen omalla suorittimellaan
+   (*cross-compilation*): Rustin ARM64-kohde ja Debian Bookwormin ARM64 C-kääntäjä
+   tuottavat saman Debian-version ajonaikaiseen ympäristöön sopivan binäärin.
+   Näin koko käännöstä ei tarvitse emuloida. QEMU käynnistää valmiin ARM64-kuvan
+   agentilla HTTP- ja terveystarkistuksia varten; staging testaa sen vielä aidolla
+   ARM64-VM:llä. Dockerfile tukee myös natiivia AMD64- ja ARM64-käännöstä ja hylkää
+   muut suoritinparit. Seuraa silti jobin 60 minuutin aikarajaa. Sovelluksen
+   tuotanto-VM:ää ei käytetä build-agenttina.
+   [Dockerin monialustakäännökset](https://docs.docker.com/build/building/multi-platform/)
+   ja [Rustin ARM64 Linux -kohde](https://doc.rust-lang.org/rustc/platform-support/aarch64-unknown-linux-gnu.html)
+   kuvaavat menetelmän ja käännöstyökalujen vaatimukset.
 8. Aktivoi `enableDeployments` vasta käyttöoikeuksien ja ulkoisten tarkistusten jälkeen.
    Aja `main` stagingiin, varmista onnistuminen ja säilytä build. Kokeile myös
    hallitusti hylättävää julkaisua. Luo vasta sen jälkeen ensimmäinen tuotantotagi.

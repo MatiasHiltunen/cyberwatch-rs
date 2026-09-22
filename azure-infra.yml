@@ -9,6 +9,7 @@ trigger:
       - deploy/azure/*
       - tools/ado_infra.py
       - tools/test_ado_infra.py
+      - tools/install_bicep.sh
       - azure-infra.yml
 pr: none
 
