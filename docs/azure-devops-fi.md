@@ -2,15 +2,15 @@
 
 Tämä toteutus käyttää projektin **DevOpsYAMKOpenDemo / DevOpsDemo** Azure Repos
 -repositoriota `cyberwatch-rs`. [Putken YAML](../azure-pipelines.yml) on versionoitu
-koodin kanssa. Nykyinen Azure-VM säilyy tuotantokohteena. Staging tarvitsee oman
-VM:n, tietolevyn, salaisuudet ja resurssiryhmän. Opintojakson tehtävänannot ja
+koodin kanssa. Nykyinen Azure-VM säilyy tuotantokohteena. Stagingilla on oma
+VM, tietolevy, salaisuudet ja resurssiryhmä. Opintojakson tehtävänannot ja
 palautukset ovat edelleen vain Moodlen kurssioppaassa.
 
 ## Käyttöönoton tila 22.9.2026
 
 Azure CLI:llä vahvistettu kohdetilaus on **LapinAMK-Student-YAMKDevops-SANDBOX**
 (`afe8ae0d-d866-47a9-bc56-e1f4475e6cc6`). Toteutus on Azure Reposin
-`codex/azure-devops-cicd`-haarassa ja [luonnosmuotoisessa pull requestissa 1](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_git/cyberwatch-rs/pullrequest/1).
+`codex/azure-devops-cicd`-haarassa ja [pull requestissa 1](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_git/cyberwatch-rs/pullrequest/1).
 Sitä ei ole vielä yhdistetty `main`-haaraan.
 
 - [Sovelluksen CI-ajo 8](https://dev.azure.com/DevOpsYAMKOpenDemo/DevOpsDemo/_build/results?buildId=8&view=results)
@@ -26,6 +26,19 @@ Sitä ei ole vielä yhdistetty `main`-haaraan.
   resurssille ei löytynyt toteutettavia muutoksia. Kolme palvelun laskennallista
   tai vain luettavaa ominaisuuseroa kirjattiin `NoEffect`-havainnoiksi.
   Tämä oli suunnittelukoe; apply-vaihetta ei ajettu.
+- Hyväksytty staging-ympäristö on luotu. Sovellus asennettiin onnistuneen CI-ajon
+  8 artefaktista, jonka tiiviste ja ARM64-kuva tarkistettiin ennen asennusta.
+  HTTPS-, autentikointi-, readiness- ja verkkorajauksen tarkistukset onnistuivat.
+  Käyttöjärjestelmän päivitysten jälkeen tehty oikea uudelleenkäynnistys säilytti
+  tietokannan ehjänä, ja palvelut käynnistyivät automaattisesti. Sovellus käyttää
+  omaa tietokantaa ja omia salaisuuksia. Ensimmäisellä
+  tiedonhakukierroksella 29 lähdettä 38:sta onnistui; yhdeksän lähteen haku epäonnistui.
+  Toimiva readiness ei tarkoita, että kaikki ulkopuoliset tietolähteet toimivat.
+  Bootstrap on ylläpitäjän käyttöönottotoimi: se ei korvaa tuotantotagin vaatimaa
+  onnistunutta `main`-haaran `DeployStaging`-vaihetta.
+- Stagingin paikallinen what-if onnistui commitilla `0898530`: kahdeksan
+  hallittua resurssia, ei toteutettavia muutoksia. IaC:n Azure Pipelines
+  -yhteyden kautta tehtävä Plan/Apply-koe on vielä tekemättä.
 - DevOps-ympäristöt `cyberwatch-staging` ja `cyberwatch-production` on luotu.
   Molemmissa on exclusive lock ja käyttöoikeus vain putkille `Cyberwatch-CICD`
   (2) sekä `Cyberwatch-Infrastructure` (3). Tuotantoympäristössä on lisäksi
@@ -33,22 +46,38 @@ Sitä ei ole vielä yhdistetty `main`-haaraan.
   itse käynnistämänsä ajon; kyseessä ei ole kahden henkilön hyväksyntämalli.
 - Repositorion oletushaara on `main`. Haaran vaaditut build validation
   -käytännöt suorittavat sovelluksen CI:n ja IaC-tiedostoja muutettaessa
-  infrastruktuurin validoinnin. Ihmisen PR-katselmoinnin vaatimus ja
-  tuotantotagien luontioikeuksien rajaus on vielä määritettävä.
+  infrastruktuurin validoinnin. Mainiin yhdistäminen vaatii lisäksi Matias
+  Hiltusen katselmoinnin, ja uusi push nollaa hyväksynnän. Yhden opettajan demossa
+  myös oman PR:n hyväksyminen on sallittu; tämä ei ole riippumaton vertaisarviointi.
+- Projektin Build Service -identiteetiltä on estetty tagien luonti tässä
+  repositoriossa; lähdekoodin luku säilyy sallittuna. Tarkistushetkellä projektin
+  Contributors- ja Project Administrators -ryhmien ainoa henkilöjäsen oli
+  opettaja. Repositorio perii edelleen näiden ryhmien oikeudet: ryhmien
+  jäsenmuutosten yhteydessä on tarkistettava myös tagien luontioikeudet.
+  Projektin asetukset rajaavat YAML-jobien tokenit tähän projektiin ja jobissa
+  viitattuihin repositorioihin. WIF-identiteetin Azure RBAC ja job tokenin
+  DevOps-oikeudet ovat eri käyttöoikeuksia.
+  [Microsoft: job access tokens](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops),
+  [Microsoft: Git tags](https://learn.microsoft.com/en-us/azure/devops/repos/git/git-tags?view=azure-devops).
 
 **Azure-julkaisut ovat edelleen poissa käytöstä** (`enableDeployments: false`).
-Stagingin resurssiryhmä on luotu, mutta se on tyhjä. Stagingin VM:ää, neljää
-managed identityä tai niiden WIF-palveluyhteyksiä ei ole luotu. Stagingin
-`storageAccount` on tarkoituksella `null`, kunnes luonti palauttaa todellisen
-nimen. Nykyistä tuotantosovellusta ei ole muutettu tämän käyttöönoton yhteydessä.
+Stagingin VM, verkko, levyt ja yksityinen artefaktitallennus on luotu.
+Todellinen tallennustilin nimi `cywlqgeq7hp4llyw` on kirjattu `targets.json`-tiedostoon.
+Kaikki neljä managed identityä, niiden federated credential -määritykset ja
+WIF-palveluyhteydet on luotu. Tuotannon kummassakin palveluyhteydessä on opettajan
+hyväksyntä YAML:n ulkopuolella. Nykyistä tuotantosovellusta ei ole muutettu.
 
-Identiteettien, federointien, palveluyhteyksien ja laskutettavan stagingin
-käyttöönotto odottaa nimettyjen resurssien hyväksyntää. Lisäksi Azure-tilin
-oikeuksista puuttuu `Microsoft.Authorization/roleAssignments/write`;
-pipeline-identiteettien roolit on myönnettävä erikseen siihen oikeutetulla
-tilillä. Myös palveluyhteyksien omat käyttörajaukset ja hyväksynnät on tehtävä
-ennen aktivointia. Ympäristön hyväksyntä yksin ei suojaa palveluyhteyden käyttöä
-muokatusta YAML-tiedostosta. [Päivätty tarkistusnäyttö](evidence/azure-devops-setup-20260922.json)
+Nykyiseltä Azure-tililtä puuttuu `Microsoft.Authorization/roleAssignments/write`.
+[Ylläpitäjän täsmällinen RBAC-ohje](azure-rbac-handoff-fi.md) sisältää luoduille
+identiteeteille myönnettävät 12 resurssikohtaista roolia. Kun roolit on myönnetty,
+kunkin palveluyhteyden käyttö avataan vain omalle putkelleen: sovellusputki 2
+tai IaC-putki 3. **Tällä hetkellä minkään palveluyhteyden pipeline-käyttöä ei
+ole sallittu.** DevOpsin palauttama `isReady: true` ei osoita RBAC:n tai WIF:n
+toimivuutta: tässä käyttöönotossa palvelu palautti sen jo yhteyden luomisen
+yhteydessä. Todellinen pääsy varmennetaan erikseen putkiajolla.
+Ympäristön hyväksyntä yksin ei suojaa palveluyhteyden käyttöä muokatusta
+YAML-tiedostosta; siksi tuotannon hyväksynnät ovat myös palveluyhteyksissä.
+[Päivätty tarkistusnäyttö](evidence/azure-devops-setup-20260922.json)
 erittelee kokeillut ja vielä kokeilematta olevat vaiheet.
 
 CI:n `verifyReleaseArtifact: true` mahdollistaa ARM64-kuvan rakentamisen ja
@@ -103,8 +132,8 @@ Sovelluksen julkaisun kohteet tilauksessa
 
 | Kohde | Staging | Tuotanto |
 | --- | --- | --- |
-| Resurssiryhmä | luotu, tyhjä `rg-cyberwatch-staging-swe` | nykyinen `rg-cyberwatch-yamk-swe` |
-| VM | uusi `cyberwatch-staging` | nykyinen `cyberwatch-yamk` |
+| Resurssiryhmä | `rg-cyberwatch-staging-swe` | nykyinen `rg-cyberwatch-yamk-swe` |
+| VM | luotu `cyberwatch-staging` | nykyinen `cyberwatch-yamk` |
 | Identity | `id-cyberwatch-ado-staging` | `id-cyberwatch-ado-prod` |
 | Service connection | `cyberwatch-staging-wif` | `cyberwatch-prod-wif` |
 | DevOps environment | luotu `cyberwatch-staging` | luotu `cyberwatch-production` |
@@ -158,7 +187,7 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
    Lisää tuotannon molempiin palveluyhteyksiin opettajan hyväksyntä YAML:n
    ulkopuolella. Yhteinen ympäristölukko estää sovelluksen ja IaC:n samanaikaiset
    muutokset samassa ympäristössä.
-6. Tarkista `main`-haaran jo luodut build validation -käytännöt ja lisää
+6. Tarkista `main`-haaran jo luodut build validation -käytännöt ja opettajan
    katselmointivaatimus. Varmista, ettei yleistä policy bypass -oikeutta ole
    annettu. Rajaa tuotantotagien luonti ja force push -oikeudet julkaisusta
    vastaaville. Varmista erikseen, kuka saa muuttaa approval/check-asetuksia.
@@ -177,6 +206,9 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
 8. Aktivoi `enableDeployments` vasta käyttöoikeuksien ja ulkoisten tarkistusten jälkeen.
    Aja `main` stagingiin, varmista onnistuminen ja säilytä build. Kokeile myös
    hallitusti hylättävää julkaisua. Luo vasta sen jälkeen ensimmäinen tuotantotagi.
+
+Käyttöönoton yllä oleva järjestys kuvaa myös uuden vastaavan ympäristön perustamisen.
+Tämän demon jo tehtyjä vaiheita ei ajeta uudelleen; ajantasainen tila on sivun alussa.
 
 ## Salaisuudet, terveystarkistus ja palautuminen
 
