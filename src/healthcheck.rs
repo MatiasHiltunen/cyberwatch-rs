@@ -142,12 +142,21 @@ mod tests {
                 let (mut socket, _) = listener.accept().unwrap();
                 socket.set_read_timeout(Some(TIMEOUT)).unwrap();
                 let mut request = [0_u8; 256];
-                let count = socket.read(&mut request).unwrap();
-                assert!(request[..count].starts_with(b"GET /ready HTTP/1.1\r\n"));
+                let mut used = 0;
+                // TCP can split the request across reads. Drain its headers before
+                // closing so unread request bytes cannot reset the connection.
+                while !request[..used].ends_with(b"\r\n\r\n") {
+                    assert!(used < request.len(), "request headers exceeded test limit");
+                    let count = socket.read(&mut request[used..]).unwrap();
+                    assert_ne!(count, 0, "request ended before its headers");
+                    used += count;
+                }
+                assert!(request[..used].starts_with(b"GET /ready HTTP/1.1\r\n"));
                 socket.write_all(&response).unwrap();
             });
-            assert_eq!(probe(address).is_ok(), ready);
+            let result = probe(address);
             server.join().unwrap();
+            assert_eq!(result.is_ok(), ready, "unexpected probe result: {result:?}");
         }
     }
 }

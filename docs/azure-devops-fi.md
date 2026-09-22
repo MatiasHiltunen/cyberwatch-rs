@@ -105,6 +105,14 @@ erikseen. [Microsoft: Run Command](https://learn.microsoft.com/en-us/azure/virtu
 4. Luo kaksi identityä ja DevOps-yhteysluonnosta. Lisää kummankin yhteyden oma
    federated credential kyseiseen identityyn. Azure-roolien myöntämiseen oikeutettu
    ylläpitäjä lisää kolme yllä kuvattua resurssikohtaista roolia.
+   Federation hoitaa tunnistautumisen; se ei myönnä RBAC-oikeuksia. Resurssien
+   luonnin jälkeen ylläpitäjä tarkastaa suunnitelman komennolla
+   `python deploy/azure/grant_pipeline_roles.py` ja toteuttaa sen komennolla
+   `python deploy/azure/grant_pipeline_roles.py --apply`. Skripti hakee molempien
+   luotujen identityjen principal ID:t Azuresta ja tarkistaa resurssit ennen
+   ensimmäistä roolimääritystä. Ilman `--apply`-valintaa se vain lukee ja tulostaa
+   kuusi määritystä. Azure CLI:hin kirjautuneella tilillä on oltava oikeus
+   `Microsoft.Authorization/roleAssignments/write` näissä kohteissa.
 5. Luo DevOps-ympäristöt. Salli kummankin environmentin ja service connectionin
    käyttö vain Cyberwatchin nimetylle pipeline-määritykselle. **Grant access
    permission to all pipelines** jätetään pois. Tuotantoon lisätään opettajan

@@ -23,6 +23,11 @@ PROJECT = '01ad21b7-bfab-4043-bda1-f8a29e8ce4ec'
 REPOSITORY = '369a248b-ba7a-4623-b4e8-a63a01c2b6cc'
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, 'Release lookup redirects are forbidden', headers, fp)
+
+
 def run(args, *, private=False):
     result = subprocess.run(args, capture_output=True, text=True, timeout=900)
     if result.returncode:
@@ -94,7 +99,7 @@ def ado_get(path):
     request = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + token,
                                                  'Accept': 'application/json'})
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.build_opener(NoRedirect()).open(request, timeout=30) as response:
             return json.load(response)
     except (urllib.error.URLError, ValueError):
         raise RuntimeError('Azure DevOps release lookup failed; response withheld') from None

@@ -33,6 +33,7 @@ stages:
             persistCredentials: false
           - bash: |
               set -euo pipefail
+              mkdir -p reports
               python3 -m venv .ci-venv
               .ci-venv/bin/pip install -r tools/requirements-dev.txt
               rustup show active-toolchain
