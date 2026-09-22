@@ -102,20 +102,21 @@ def target(environment):
     return dict(value, subscription=SUBSCRIPTION, dnsLabel=dns, environment=environment)
 
 
-def resources(value):
+def resources(value, include_bootstrap=False):
     base = f"/subscriptions/{SUBSCRIPTION}/resourceGroups/{value['resourceGroup']}/providers/"
     prefix, storage = value['vm'], value['storageAccount']
     definitions = [
         ('Microsoft.Network/networkSecurityGroups', prefix + '-nsg', NETWORK_API),
         ('Microsoft.Network/virtualNetworks', prefix + '-vnet', NETWORK_API),
         ('Microsoft.Network/publicIPAddresses', prefix + '-ip', NETWORK_API),
-        ('Microsoft.Network/networkInterfaces', prefix + '-nic', NETWORK_API),
         ('Microsoft.Compute/disks', prefix + '-data', '2024-03-02'),
         ('Microsoft.Storage/storageAccounts', storage, STORAGE_API),
         ('Microsoft.Storage/storageAccounts/blobServices', storage + '/default', STORAGE_API),
         ('Microsoft.Storage/storageAccounts/blobServices/containers', storage + '/default/artifacts', STORAGE_API),
         ('Microsoft.Storage/storageAccounts/managementPolicies', storage + '/default', STORAGE_API),
     ]
+    if include_bootstrap:
+        definitions.append(('Microsoft.Network/networkInterfaces', prefix + '-nic', NETWORK_API))
     result = {}
     for resource_type, name, api in definitions:
         type_parts, name_parts = resource_type.split('/'), name.split('/')
@@ -139,7 +140,7 @@ def verify_existing(value):
             '--subscription', SUBSCRIPTION)
     if vm.get('id', '').lower() != expected_group + '/providers/microsoft.compute/virtualmachines/' + value['vm']:
         raise ValueError('The existing VM does not match the selected environment')
-    for identifier, definition in resources(value).items():
+    for identifier, definition in resources(value, include_bootstrap=True).items():
         current = az('rest', '--method', 'get', '--url',
                      'https://management.azure.com' + identifier + '?api-version=' + definition['api'])
         if current.get('id', '').lower() != identifier:
@@ -163,7 +164,7 @@ def compile_template(destination, value):
             or Counter(item.get('type', '').lower() for item in declared) != expected
             or any('resources' in item or 'condition' in item for item in declared)
             or template.get('outputs')):
-        raise ValueError('Steady-state template resource types differ from the nine audited resources')
+        raise ValueError('Steady-state template resource types differ from the eight audited resources')
     write_json(destination, template)
     return template
 
@@ -193,6 +194,13 @@ def clean_delta(delta, resource_type, parent=''):
     path = delta['path']
     full_path = path if not parent or path.startswith(parent) else parent + ('' if path.startswith('[') else '.') + path
     kind = delta.get('propertyChangeType')
+    if kind == 'NoEffect':
+        # ARM defines NoEffect as a read-only property ignored by the provider.
+        # Retain the path/reason for review, without copying full property values.
+        reason = delta.get('reason', 'azure-read-only')
+        if reason not in {'azure-read-only', 'standard-ssd-computed-performance'}:
+            raise ValueError('Unknown informational what-if reason')
+        return {'path': path, 'propertyChangeType': kind, 'reason': reason}
     if kind not in {'Create', 'Delete', 'Modify', 'Array'} or not permitted_path(resource_type, full_path):
         raise ValueError('Replacement-sensitive or unreviewed property change: ' + full_path)
     allowed = {'path', 'propertyChangeType', 'before', 'after', 'children'}
@@ -210,6 +218,34 @@ def clean_delta(delta, resource_type, parent=''):
     return cleaned
 
 
+def computed_disk_default(delta, change, resource_type):
+    """Recognize only the observed non-settable StandardSSD performance defaults.
+
+    Microsoft.Compute documents these properties as settable only on UltraSSD.
+    The before/after snapshots must both retain this exact 4-GiB StandardSSD SKU;
+    explicit new values, a changed SKU and any other disk property fail closed.
+    """
+    expected = {'properties.diskIOPSReadWrite': 500, 'properties.diskMBpsReadWrite': 100}
+    if (resource_type.lower() != 'microsoft.compute/disks'
+            or delta.get('path') not in expected or delta.get('propertyChangeType') != 'Delete'
+            or delta.get('before') != expected[delta['path']] or delta.get('after') is not None
+            or delta.get('children')):
+        return False
+    field = delta['path'].split('.')[-1]
+    before, after = change.get('before') or {}, change.get('after') or {}
+    return (all(snapshot.get('sku', {}).get('name') == 'StandardSSD_LRS'
+                and snapshot.get('properties', {}).get('diskSizeGB') == 4
+                for snapshot in (before, after))
+            and before['properties'].get(field) == expected[delta['path']]
+            and field not in after['properties'])
+
+
+def has_effect(delta):
+    if delta['propertyChangeType'] == 'NoEffect':
+        return False
+    return any(has_effect(child) for child in delta['children']) if delta.get('children') else True
+
+
 def reviewed_changes(report, value):
     expected = resources(value)
     if (report.get('status') != 'Succeeded' or not isinstance(report.get('changes'), list)
@@ -225,10 +261,20 @@ def reviewed_changes(report, value):
         if kind not in {'NoChange', 'Modify'} or change.get('unsupportedReason'):
             raise ValueError('Steady-state IaC refuses creates, deletes, ignored or unsupported resource changes')
         deltas = change.get('delta') or []
-        if not isinstance(deltas, list) or (kind == 'Modify' and not deltas) or (kind == 'NoChange' and deltas):
+        if not isinstance(deltas, list) or (kind == 'Modify' and not deltas):
             raise ValueError('What-if change has no reviewable property delta')
-        result.append({'resourceId': identifier, 'changeType': kind,
-                       'delta': sorted((clean_delta(item, expected[identifier]['type']) for item in deltas), key=encoded)})
+        cleaned = []
+        resource_type = expected[identifier]['type']
+        for item in deltas:
+            if computed_disk_default(item, change, resource_type):
+                item = {'path': item['path'], 'propertyChangeType': 'NoEffect',
+                        'reason': 'standard-ssd-computed-performance'}
+            cleaned.append(clean_delta(item, resource_type))
+        effect = any(has_effect(item) for item in cleaned)
+        if kind == 'NoChange' and effect:
+            raise ValueError('What-if classified a real property change as NoChange')
+        result.append({'resourceId': identifier, 'changeType': 'Modify' if effect else 'NoChange',
+                       'delta': sorted(cleaned, key=encoded)})
     if seen != set(expected):
         raise ValueError('What-if omitted a required resource; do not silently recreate or ignore resources')
     return {'status': 'Succeeded', 'changes': sorted(result, key=lambda item: item['resourceId'])}
@@ -241,7 +287,7 @@ def what_if(value, artifact):
                 '--parameters', '@' + str(artifact / 'parameters.json'), '--no-pretty-print',
                 '--exclude-change-types', 'Ignore')
     # Ignore refers to unmanaged resources outside this template (VM/identities).
-    # Any omitted managed resource is caught by the complete nine-ID check above.
+    # Any omitted managed resource is caught by the complete eight-ID check above.
     return reviewed_changes(report, value)
 
 

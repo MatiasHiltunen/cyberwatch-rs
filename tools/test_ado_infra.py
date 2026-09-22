@@ -41,10 +41,11 @@ class InfrastructureGuards(unittest.TestCase):
     def test_resource_ids_are_exact_and_exclude_vm_identity_and_rbac_writes(self):
         selected = infra.resources(self.value)
         base = f"/subscriptions/{infra.SUBSCRIPTION}/resourcegroups/rg-cyberwatch-yamk-swe/providers/"
-        self.assertEqual(len(selected), 9)
+        self.assertEqual(len(selected), 8)
+        self.assertEqual(len(infra.resources(self.value, include_bootstrap=True)), 9)
         self.assertTrue(all(identifier.startswith(base) for identifier in selected))
         self.assertIn(base + 'microsoft.storage/storageaccounts/cywqqv6z273n7dfk/blobservices/default/containers/artifacts', selected)
-        self.assertFalse(any('virtualmachines/' in identifier or 'managedidentit' in identifier
+        self.assertFalse(any('virtualmachines/' in identifier or 'networkinterfaces/' in identifier or 'managedidentit' in identifier
                              or 'roleassignment' in identifier for identifier in selected))
 
     def test_apply_cannot_assume_local_or_feature_checkout_is_main(self):
@@ -82,6 +83,54 @@ class InfrastructureGuards(unittest.TestCase):
         ]:
             with self.subTest(path=path), self.assertRaisesRegex(ValueError, 'Replacement-sensitive'):
                 infra.clean_delta({'path': path, 'propertyChangeType': 'Modify', 'before': 'old', 'after': 'new'}, resource_type)
+
+    def disk_report(self):
+        report = self.report()
+        change = next(item for item in report['changes'] if '/disks/' in item['resourceId'])
+        change.update(changeType='Modify',
+                      before={'sku': {'name': 'StandardSSD_LRS'}, 'properties': {
+                          'diskSizeGB': 4, 'diskIOPSReadWrite': 500, 'diskMBpsReadWrite': 100}},
+                      after={'sku': {'name': 'StandardSSD_LRS'}, 'properties': {'diskSizeGB': 4}},
+                      delta=[{'path': 'properties.diskIOPSReadWrite', 'propertyChangeType': 'Delete',
+                              'before': 500, 'after': None, 'children': None}])
+        return report, change
+
+    def test_known_computed_disk_default_is_visible_but_not_a_write(self):
+        report, _change = self.disk_report()
+        normalized = infra.reviewed_changes(report, self.value)
+        disk = next(item for item in normalized['changes'] if '/disks/' in item['resourceId'])
+        self.assertEqual(disk['changeType'], 'NoChange')
+        self.assertEqual(disk['delta'][0]['reason'], 'standard-ssd-computed-performance')
+        self.assertEqual(infra.reviewed_changes(normalized, self.value), normalized)
+
+    def test_computed_disk_exception_does_not_hide_real_changes_or_other_skus(self):
+        for mutation in ('sku', 'capacity', 'performance', 'delta', 'unexpected-default'):
+            report, change = self.disk_report()
+            if mutation == 'sku':
+                change['after']['sku']['name'] = 'UltraSSD_LRS'
+            elif mutation == 'capacity':
+                change['after']['properties']['diskSizeGB'] = 8
+            elif mutation == 'performance':
+                change['after']['properties']['diskIOPSReadWrite'] = 1000
+            elif mutation == 'delta':
+                change['delta'][0].update(propertyChangeType='Modify', after=1000)
+            else:
+                change['before']['properties']['diskIOPSReadWrite'] = 600
+                change['delta'][0]['before'] = 600
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, 'Replacement-sensitive'):
+                infra.reviewed_changes(report, self.value)
+
+    def test_azure_noeffect_does_not_hide_a_real_writable_change(self):
+        report = self.report()
+        item = next(item for item in report['changes'] if '/networksecuritygroups/' in item['resourceId'])
+        item['delta'] = [{'path': 'provider.readonly', 'propertyChangeType': 'NoEffect',
+                          'before': None, 'after': {'unpublished': 'discard'}, 'children': None}]
+        normalized = infra.reviewed_changes(report, self.value)
+        self.assertNotIn(b'unpublished', infra.encoded(normalized))
+        item['changeType'] = 'Modify'
+        item['delta'].append({'path': 'tags.course', 'propertyChangeType': 'Modify', 'before': 'old', 'after': 'new'})
+        normalized = infra.reviewed_changes(report, self.value)
+        self.assertEqual(next(item for item in normalized['changes'] if '/networksecuritygroups/' in item['resourceId'])['changeType'], 'Modify')
 
     def test_sanitized_review_preserves_nonsecret_values_but_not_full_resource_payload(self):
         raw = self.report(modified=True)

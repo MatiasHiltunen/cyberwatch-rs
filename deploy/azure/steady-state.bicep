@@ -70,6 +70,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   location: location
   tags: resourceTags
   properties: {
+    privateEndpointVNetPolicies: 'Disabled'
     addressSpace: {
       addressPrefixes: [
         '10.42.0.0/24'
@@ -105,34 +106,14 @@ resource publicIp 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
     dnsSettings: {
       domainNameLabel: dnsLabel
     }
+    ddosSettings: {
+      protectionMode: 'VirtualNetworkInherited'
+    }
   }
 }
 
-resource networkInterface 'Microsoft.Network/networkInterfaces@2024-05-01' = {
-  name: '${namePrefix}-nic'
-  location: location
-  tags: resourceTags
-  properties: {
-    enableAcceleratedNetworking: false
-    enableIPForwarding: false
-    ipConfigurations: [
-      {
-        name: 'primary'
-        properties: {
-          primary: true
-          privateIPAllocationMethod: 'Dynamic'
-          privateIPAddressVersion: 'IPv4'
-          subnet: {
-            id: '${virtualNetwork.id}/subnets/application'
-          }
-          publicIPAddress: {
-            id: publicIp.id
-          }
-        }
-      }
-    ]
-  }
-}
+// The existing NIC is bootstrap-owned together with the VM. Its existence is
+// checked by ado_infra.py; no PUT can reset provider-specific NIC properties.
 
 // Detaching this disk on VM deletion preserves the database. Deleting the entire
 // resource group still deletes its disk, so recovery also needs a separate backup.
@@ -189,7 +170,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
   parent: storageAccount
   name: 'default'
-  properties: {}
+  properties: {
+    // Preserve the confirmed current policy; enabling retention is a separate
+    // reviewed data-retention change, not an implicit default reset.
+    deleteRetentionPolicy: {
+      enabled: false
+      allowPermanentDelete: false
+    }
+  }
 }
 
 resource artifactContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
@@ -197,6 +185,8 @@ resource artifactContainer 'Microsoft.Storage/storageAccounts/blobServices/conta
   name: artifactContainerName
   properties: {
     publicAccess: 'None'
+    defaultEncryptionScope: '$account-encryption-key'
+    denyEncryptionScopeOverride: false
   }
 }
 
@@ -234,4 +224,3 @@ resource artifactLifecycle 'Microsoft.Storage/storageAccounts/managementPolicies
     }
   }
 }
-

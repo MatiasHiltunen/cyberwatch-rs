@@ -60,12 +60,16 @@ versio ja cloud-init toimitetaan tällöin kerran. Alkuperäinen
 sen `what-if`-toiminto voi luoda resurssiryhmän ja valmistella paikalliset
 SSH-avaimet. Sitä ei kutsuta tässä jatkuvan ylläpidon putkessa.
 
-[`steady-state.bicep`](../deploy/azure/steady-state.bicep) ylläpitää yhdeksää
-jo olemassa olevaa resurssia: NSG, VNet, julkinen IP, NIC, datalevy,
+[`steady-state.bicep`](../deploy/azure/steady-state.bicep) ylläpitää kahdeksaa
+jo olemassa olevaa resurssia: NSG, VNet, julkinen IP, datalevy,
 tallennustili, Blob-palvelu, `artifacts`-kontti ja sen lifecycle-käytäntö.
-Se ei lähetä VM:n PUT-pyyntöä, muuta käyttöjärjestelmää tai suorita
-runtime-asennusta. VM luetaan vain kohteen tarkistamiseksi. Kaikkien yhdeksän
-resurssin on oltava olemassa ennen suunnittelua ja uudelleen ennen toteutusta.
+Se ei lähetä VM:n tai sen NIC-verkkokortin PUT-pyyntöä, muuta käyttöjärjestelmää
+tai suorita runtime-asennusta. VM ja NIC luetaan vain kohteen tarkistamiseksi.
+NIC:n sidokset ja asetukset säilyvät bootstrap-mallissa; niiden muutokset
+tarvitsevat erillisen katselmoinnin. Näin ylläpito ei yritä palauttaa
+verkkokortin palveluntarjoajakohtaisia ominaisuuksia tuntemattomiin oletusarvoihin.
+Kaikkien kahdeksan hallitun resurssin sekä VM:n ja NIC:n on oltava olemassa
+ennen suunnittelua ja uudelleen ennen toteutusta.
 Puuttuvan resurssin automaattinen uudelleenluonti estetään, jotta esimerkiksi
 kadonnut datalevy ei korvautuisi huomaamatta tyhjällä levyllä.
 
@@ -86,6 +90,19 @@ tai tietojen säilymiseen vaikuttavat muutokset pysäyttävät putken.
 Ne tarvitsevat erillisen ylläpito- tai palautussuunnitelman.
 NSG:n tai tallennuskäytännön sallittu muutos ei automaattisesti ole turvallinen:
 hyväksyjä arvioi myös sen vaikutuksen pääsyyn ja tietojen säilytykseen.
+
+What-if voi ilmoittaa palvelun automaattisesti asettaman oletusarvon poistoksi,
+vaikka arvo ei käyttöönotossa poistu. Malli säilyttää Azuresta vahvistetut
+kirjoitettavat DDoS-, VNet-, Blob retention- ja container encryption -asetukset
+eksplisiittisesti. Skripti merkitsee erikseen `NoEffect`-havaintoina Azuren
+itsensä vain luku -ominaisuuksiksi luokittelemat arvot sekä kaksi rajattua
+Standard SSD -levyn laskennallista suorituskykyarvoa: 500 IOPS ja 100 MB/s.
+Jälkimmäinen poikkeus hyväksyy vain `Delete`-esityksen, kun ennen- ja
+jälkeen-tilan SKU on sama `StandardSSD_LRS`, koko on 4 GiB ja uusi määrittely
+ei aseta suorituskykyarvoa. Uusi arvo, toinen SKU, koon muutos tai muu
+tuntematon ero pysäyttää ajon. Havaintojen polut ja syyt jäävät raporttiin.
+[Microsoft: what-if noise ja NoEffect](https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/deploy-what-if),
+[Microsoft: disk properties](https://learn.microsoft.com/en-us/azure/templates/microsoft.compute/disks).
 
 ## Plan- ja apply-vaiheiden käyttö
 
