@@ -42,7 +42,7 @@ stages:
               set -euo pipefail
               mkdir -p reports
               python3 -m unittest discover -s tools -p test_ado_infra.py -v
-              az bicep install --version $(bicepVersion)
+              bash tools/install_bicep.sh $(bicepVersion)
               az bicep build --file deploy/azure/main.bicep --outfile reports/bootstrap-template.json
               az bicep build --file deploy/azure/steady-state.bicep --outfile reports/steady-state-template.json
               if [[ "$OPERATION" == apply && "$BUILD_SOURCEBRANCH" != refs/heads/main ]]; then
@@ -78,7 +78,7 @@ stages:
                 scriptLocation: inlineScript
                 inlineScript: |
                   set -euo pipefail
-                  az bicep install --version $(bicepVersion)
+                  bash tools/install_bicep.sh $(bicepVersion)
                   python3 tools/ado_infra.py plan --environment '${{ parameters.environment }}' --artifact reports/infra-plan
               displayName: Record exact template, parameters and Azure what-if
             - publish: reports/infra-plan
@@ -116,6 +116,6 @@ stages:
                       scriptLocation: inlineScript
                       inlineScript: |
                         set -euo pipefail
-                        az bicep install --version $(bicepVersion)
+                        bash tools/install_bicep.sh $(bicepVersion)
                         python3 tools/ado_infra.py apply --environment '${{ parameters.environment }}' --artifact '$(Pipeline.Workspace)/infra-plan'
                     displayName: Recheck drift and apply the reviewed inputs
