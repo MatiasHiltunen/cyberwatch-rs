@@ -1,0 +1,17 @@
+{
+  "subscription": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "staging": {
+    "resourceGroup": "rg-cyberwatch-staging-swe",
+    "vm": "cyberwatch-staging",
+    "storageAccount": null,
+    "container": "artifacts",
+    "fqdn": "cyberwatch-staging-afe8ae-20260922.swedencentral.cloudapp.azure.com"
+  },
+  "prod": {
+    "resourceGroup": "rg-cyberwatch-yamk-swe",
+    "vm": "cyberwatch-yamk",
+    "storageAccount": "cywqqv6z273n7dfk",
+    "container": "artifacts",
+    "fqdn": "cyberwatch-yamk-afe8ae-20260908.swedencentral.cloudapp.azure.com"
+  }
+}

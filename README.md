@@ -8,6 +8,11 @@ Start with the [Finnish course starter guide](docs/course-start-fi.md), [local s
 
 ## Included in this bundle
 
+The [Finnish Azure DevOps CI/CD runbook](docs/azure-devops-fi.md) describes the
+prepared `main` → staging → version tag → production flow, deployment identities,
+approval gates and rollback. Azure deployment remains disabled until its
+documented environment and permission prerequisites have been completed.
+
 - Complete Rust crate under `src/`
 - Embedded database schema in `src/schema.sql`
 - NVD, CISA KEV, GitHub advisory, CVE Program, and FIRST EPSS integrations

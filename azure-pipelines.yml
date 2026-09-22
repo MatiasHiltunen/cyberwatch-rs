@@ -1,0 +1,169 @@
+# Azure Repos PR validation is configured by a main-branch build policy.
+name: cyberwatch-$(Date:yyyyMMdd).$(Rev:r)
+trigger:
+  batch: true
+  branches:
+    include: [main]
+  tags:
+    include: ['v*']
+pr: none
+
+parameters:
+  # Keep false until the external environment/connection checks and Azure RBAC
+  # have been provisioned. This is a bootstrap switch, not a security boundary.
+  - name: enableDeployments
+    type: boolean
+    default: false
+
+pool:
+  vmImage: ubuntu-24.04
+
+variables:
+  releaseArtifact: cyberwatch-arm64
+
+stages:
+  - stage: Validate
+    condition: not(startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+    jobs:
+      - job: Quality
+        timeoutInMinutes: 60
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - bash: |
+              set -euo pipefail
+              python3 -m venv .ci-venv
+              .ci-venv/bin/pip install -r tools/requirements-dev.txt
+              rustup show active-toolchain
+              .ci-venv/bin/python tools/check.py
+            displayName: Rust, Python, policy and HTTP regression tests
+          - publish: reports
+            artifact: quality-evidence
+            condition: always()
+      - job: Security
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - bash: |
+              set -euo pipefail
+              mkdir -p reports
+              python3 -m venv .sast-venv
+              .sast-venv/bin/pip install semgrep==1.176.0
+              .sast-venv/bin/semgrep scan --config security/semgrep.yml --metrics off --disable-version-check --error --json --output reports/sast.json src
+            displayName: Reviewed Semgrep rules
+          - bash: bash tools/ci_security.sh source
+            displayName: Dependency, secret and IaC gate
+            condition: succeededOrFailed()
+          - publish: reports
+            artifact: security-evidence
+            condition: always()
+
+  - stage: Package
+    dependsOn: Validate
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: ARM64
+        timeoutInMinutes: 60
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - bash: |
+              set -euo pipefail
+              sudo apt-get update -qq
+              sudo apt-get install -y --no-install-recommends qemu-user-static binfmt-support
+              sudo update-binfmts --enable qemu-aarch64
+              mkdir -p dist reports
+              docker buildx create --name cyberwatch-builder --use
+              docker buildx build --platform linux/arm64 --load -t "cyberwatch-release:$BUILD_SOURCEVERSION" .
+              python3 tools/ado_release.py package --output dist
+              bash tools/ci_security.sh image "cyberwatch-release:$BUILD_SOURCEVERSION"
+            displayName: Build ARM64 image once, record digest and scan
+          - bash: |
+              set -euo pipefail
+              python3 tools/ci_container_smoke.py "cyberwatch-release:$BUILD_SOURCEVERSION"
+            displayName: Test the exact ARM64 release image
+          - publish: reports
+            artifact: image-evidence
+            condition: always()
+          - publish: dist
+            artifact: $(releaseArtifact)
+            condition: succeeded()
+
+  - ${{ if eq(parameters.enableDeployments, true) }}:
+    - stage: DeployStaging
+      displayName: Deploy staging
+      dependsOn: Package
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      lockBehavior: sequential
+      jobs:
+        - deployment: Staging
+          environment: cyberwatch-staging
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - checkout: self
+                    persistCredentials: false
+                  - download: current
+                    artifact: $(releaseArtifact)
+                  - task: AzureCLI@2
+                    inputs:
+                      azureSubscription: cyberwatch-staging-wif
+                      scriptType: bash
+                      scriptLocation: inlineScript
+                      inlineScript: python3 tools/ado_release.py deploy --environment staging --artifact "$(Pipeline.Workspace)/$(releaseArtifact)"
+                    displayName: Deploy with staging identity and verify readiness
+
+    - stage: ResolveProduction
+      dependsOn: []
+      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      jobs:
+        - job: Resolve
+          steps:
+            - checkout: self
+              persistCredentials: false
+            - bash: python3 tools/ado_release.py resolve
+              name: release
+              env:
+                SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+              displayName: Require a successful staging deployment of this exact commit
+
+    - stage: DeployProduction
+      displayName: Promote reviewed image to production
+      dependsOn: ResolveProduction
+      condition: succeeded()
+      lockBehavior: sequential
+      variables:
+        validatedBuildId: $[ stageDependencies.ResolveProduction.Resolve.outputs['release.validatedBuildId'] ]
+      jobs:
+        - deployment: Production
+          # Approval + exclusive lock + pipeline authorization must be configured
+          # on this environment AND its service connection outside this YAML.
+          environment: cyberwatch-production
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - checkout: self
+                    persistCredentials: false
+                  - download: none
+                  - task: DownloadPipelineArtifact@2
+                    inputs:
+                      buildType: specific
+                      project: $(System.TeamProjectId)
+                      definition: $(System.DefinitionId)
+                      buildVersionToDownload: specific
+                      pipelineId: $(validatedBuildId)
+                      artifactName: $(releaseArtifact)
+                      targetPath: $(Pipeline.Workspace)/production-release
+                  - task: AzureCLI@2
+                    inputs:
+                      azureSubscription: cyberwatch-prod-wif
+                      scriptType: bash
+                      scriptLocation: inlineScript
+                      inlineScript: python3 tools/ado_release.py deploy --environment prod --artifact "$(Pipeline.Workspace)/production-release"
+                    displayName: Promote the staging-tested artifact without rebuilding
