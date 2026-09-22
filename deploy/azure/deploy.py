@@ -345,6 +345,8 @@ def main(argv=None):
     parser.add_argument("--image-archive", type=Path, help="Bundle only: reuse a Docker save tar without contacting Docker")
     parser.add_argument("--image-config-id", help="Required with --image-archive: exact sha256:<64 lowercase hex> image configuration digest")
     parser.add_argument("--secrets-dir", type=Path, default=ROOT / "secrets/azure")
+    parser.add_argument("--reports-dir", type=Path, default=ROOT / "reports/azure",
+                        help="Keep separate deployment state for each environment")
     parser.add_argument("--org-tags", type=Path, help="Optional JSON object overriding audited organization resource-group tags")
     opts = parser.parse_args(argv)
     for value in [opts.subscription_id, opts.resource_group, opts.name_prefix, opts.dns_label, opts.location]:
@@ -360,7 +362,7 @@ def main(argv=None):
         if not re.fullmatch(r"sha256:[a-f0-9]{64}", opts.image_config_id):
             parser.error("--image-config-id must be a canonical SHA-256 configuration digest")
     AZ = azure_command() if opts.action != "bundle" else None
-    REPORTS = ROOT / "reports/azure"
+    REPORTS = opts.reports_dir.resolve()
     REPORTS.mkdir(parents=True, exist_ok=True)
     SECRETS = opts.secrets_dir.resolve()
     if opts.action in {"what-if", "infra"}:

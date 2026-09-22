@@ -15,6 +15,8 @@ ROLES = {
     'Virtual Machine Contributor': '9980e02c-c2be-4d73-94e8-173b1dc7cf3c',
     'Storage Blob Data Contributor': 'ba92f5b4-2d11-453d-a403-e96b0029c9fe',
     'Storage Blob Delegator': 'db58b8e5-c6ad-4a2a-8342-4190687cbf4a',
+    'Network Contributor': '4d97b98b-1d4f-4787-a291-c67834d212e7',
+    'Storage Account Contributor': '17d1049b-9a84-46fb-8f53-869881c3d3ab',
 }
 
 
@@ -34,7 +36,9 @@ def az(*args):
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
-def plan(targets):
+def plan(targets, purpose='application'):
+    if purpose not in ('application', 'infrastructure', 'all'):
+        raise ValueError('Unknown identity purpose')
     subscription = targets['subscription']
     if az('account', 'show')['id'] != subscription:
         raise ValueError('Select the explicitly configured subscription first')
@@ -46,32 +50,37 @@ def plan(targets):
         if not isinstance(target['storageAccount'], str) or not re.fullmatch(r'[a-z0-9]{3,24}', target['storageAccount']):
             raise ValueError('Complete staging bootstrap and record its actual storageAccount first')
         base = f'/subscriptions/{subscription}/resourceGroups/{group}'
-        identity_name = 'id-cyberwatch-ado-' + environment
-        identity = az('identity', 'show', '-g', group, '-n', identity_name)
-        expected_identity = base + '/providers/Microsoft.ManagedIdentity/userAssignedIdentities/' + identity_name
-        if identity['id'].lower() != expected_identity.lower():
-            raise ValueError('Identity scope differs from the approved environment')
-        if not re.fullmatch(r'[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}', identity.get('principalId', '')):
-            raise ValueError('The managed identity has no valid principal ID')
         vm = az('vm', 'show', '-g', group, '-n', target['vm'])['id']
         storage = az('storage', 'account', 'show', '-g', group, '-n', target['storageAccount'])['id']
         if (vm.lower() != (base + '/providers/Microsoft.Compute/virtualMachines/' + target['vm']).lower()
                 or storage.lower() != (base + '/providers/Microsoft.Storage/storageAccounts/' + target['storageAccount']).lower()):
             raise ValueError('Resolved resource scope differs from the approved target')
-        scopes = {'Virtual Machine Contributor': vm,
-                  'Storage Blob Data Contributor': storage + '/blobServices/default/containers/' + target['container'],
-                  'Storage Blob Delegator': storage}
-        for name, scope in scopes.items():
-            entries.append({'environment': environment, 'identity': identity_name,
-                            'principalId': identity['principalId'], 'role': name, 'roleId': ROLES[name], 'scope': scope})
+        purposes = ('application', 'infrastructure') if purpose == 'all' else (purpose,)
+        for selected in purposes:
+            prefix = 'ado' if selected == 'application' else 'iac'
+            identity_name = 'id-cyberwatch-' + prefix + '-' + environment
+            identity = az('identity', 'show', '-g', group, '-n', identity_name)
+            expected_identity = base + '/providers/Microsoft.ManagedIdentity/userAssignedIdentities/' + identity_name
+            if identity['id'].lower() != expected_identity.lower():
+                raise ValueError('Identity scope differs from the approved environment')
+            if not re.fullmatch(r'[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}', identity.get('principalId', '')):
+                raise ValueError('The managed identity has no valid principal ID')
+            scopes = ({'Virtual Machine Contributor': vm,
+                       'Storage Blob Data Contributor': storage + '/blobServices/default/containers/' + target['container'],
+                       'Storage Blob Delegator': storage} if selected == 'application' else
+                      {'Virtual Machine Contributor': base, 'Network Contributor': base, 'Storage Account Contributor': base})
+            for name, scope in scopes.items():
+                entries.append({'environment': environment, 'purpose': selected, 'identity': identity_name,
+                                'principalId': identity['principalId'], 'role': name, 'roleId': ROLES[name], 'scope': scope})
     return entries
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--apply', action='store_true', help='Create the six printed assignments using the current admin account')
+    parser.add_argument('--purpose', choices=('application', 'infrastructure', 'all'), default='application')
+    parser.add_argument('--apply', action='store_true', help='Create exactly the printed assignments using the current admin account')
     args = parser.parse_args()
-    entries = plan(json.loads((ROOT / 'targets.json').read_text()))
+    entries = plan(json.loads((ROOT / 'targets.json').read_text()), args.purpose)
     print(json.dumps(entries, indent=2))
     if args.apply:
         for entry in entries:
@@ -80,7 +89,7 @@ def main():
                 continue
             az('role', 'assignment', 'create', '--assignee-object-id', entry['principalId'],
                '--assignee-principal-type', 'ServicePrincipal', '--role', entry['roleId'], '--scope', entry['scope'])
-        print('All six resource-scoped role assignments are present.')
+        print(f'All {len(entries)} resource-scoped role assignments are present.')
 
 
 if __name__ == '__main__':

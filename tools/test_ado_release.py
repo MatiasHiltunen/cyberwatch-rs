@@ -69,7 +69,7 @@ class PromotionTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'previous image restored'):
                 updater.activate('sha256:'+'b'*64, previous, Path('/fixture.db'))
             self.assertEqual(config.call_args.args[0], previous)
-            self.assertEqual(calls.call_args.args[0], ['systemctl', 'start', 'cyberwatch.service'])
+            self.assertEqual(calls.call_args.args[0], ['systemctl', 'start', 'cyberwatch-health.timer'])
 
     def test_schema_change_stops_service_for_manual_recovery(self):
         with patch.object(updater, 'schema_fingerprint', side_effect=['old', 'new']), \
@@ -79,6 +79,75 @@ class PromotionTests(unittest.TestCase):
                 updater.activate('sha256:'+'b'*64, 'CYBERWATCH_IMAGE=sha256:'+'a'*64+'\n', Path('/fixture.db'))
             self.assertEqual(config.call_count, 1)
             self.assertEqual(calls.call_args.args[0], ['systemctl', 'stop', 'cyberwatch.service'])
+            self.assertNotIn(['systemctl', 'start', 'cyberwatch-health.timer'],
+                             [invocation.args[0] for invocation in calls.call_args_list])
+
+    def test_health_worker_is_quiesced_until_candidate_is_verified(self):
+        state = {'timer': True, 'worker': True, 'ready': False}
+
+        def systemctl(args):
+            if args == ['systemctl', 'stop', 'cyberwatch-health.timer']:
+                state['timer'] = False
+            elif args == ['systemctl', 'stop', 'cyberwatch-health.service']:
+                self.assertFalse(state['timer'], 'Stop new timer activations before draining the worker')
+                state['worker'] = False
+            elif args[-1] == 'cyberwatch.service':
+                self.assertFalse(state['timer'])
+                self.assertFalse(state['worker'], 'An in-flight health worker can restart the application')
+            elif args == ['systemctl', 'start', 'cyberwatch-health.timer']:
+                self.assertTrue(state['ready'], 'Only a verified runtime may resume health monitoring')
+                state['timer'] = True
+
+        def ready(_image):
+            state['ready'] = True
+
+        with patch.object(updater, 'schema_fingerprint', return_value='unchanged'), \
+                patch.object(updater, 'call', side_effect=systemctl), \
+                patch.object(updater, 'atomic_config'), patch.object(updater, 'wait_ready', side_effect=ready):
+            updater.activate('sha256:'+'b'*64, 'CYBERWATCH_IMAGE=sha256:'+'a'*64+'\n', Path('/fixture.db'))
+        self.assertTrue(state['timer'])
+
+    def test_failed_rollback_does_not_resume_health_monitoring(self):
+        with patch.object(updater, 'schema_fingerprint', return_value='unchanged'), \
+                patch.object(updater, 'call') as calls, patch.object(updater, 'atomic_config'), \
+                patch.object(updater, 'wait_ready', side_effect=RuntimeError('Runtime did not become ready')):
+            with self.assertRaisesRegex(RuntimeError, 'Runtime did not become ready'):
+                updater.activate('sha256:'+'b'*64, 'CYBERWATCH_IMAGE=sha256:'+'a'*64+'\n', Path('/fixture.db'))
+            self.assertNotIn(['systemctl', 'start', 'cyberwatch-health.timer'],
+                             [invocation.args[0] for invocation in calls.call_args_list])
+
+    def test_crashing_candidate_cannot_leave_rollback_start_limited(self):
+        previous = 'CYBERWATCH_IMAGE=sha256:'+'a'*64+'\n'
+        candidate = 'sha256:'+'b'*64
+        rate_limited = False
+        restored_healthy = False
+
+        def systemctl(args):
+            nonlocal rate_limited
+            if args == ['systemctl', 'reset-failed', 'cyberwatch.service']:
+                rate_limited = False
+            if args == ['systemctl', 'start', 'cyberwatch.service'] and rate_limited:
+                raise RuntimeError('Start request repeated too quickly')
+
+        def readiness(image):
+            nonlocal rate_limited, restored_healthy
+            if image == candidate:
+                # Restart=always exhausts StartLimitBurst while a crashing image
+                # is repeatedly restarted during the readiness wait.
+                rate_limited = True
+                raise RuntimeError('Candidate did not become ready')
+            self.assertEqual(image, previous.strip().split('=', 1)[1])
+            self.assertFalse(rate_limited)
+            restored_healthy = True
+
+        with patch.object(updater, 'schema_fingerprint', return_value='unchanged'), \
+                patch.object(updater, 'call', side_effect=systemctl), \
+                patch.object(updater, 'atomic_config') as config, \
+                patch.object(updater, 'wait_ready', side_effect=readiness):
+            with self.assertRaisesRegex(RuntimeError, 'previous image restored and healthy'):
+                updater.activate(candidate, previous, Path('/fixture.db'))
+            self.assertEqual(config.call_args.args[0], previous)
+            self.assertTrue(restored_healthy)
 
 
 if __name__ == '__main__':

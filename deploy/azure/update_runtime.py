@@ -112,22 +112,36 @@ def activate(candidate, previous, database):
     """Return image-only rollback evidence; never restore data automatically."""
     before = schema_fingerprint(database)
     call(['systemctl', 'start', 'cyberwatch-backup.service'])
-    call(['systemctl', 'stop', 'cyberwatch.service'])
+    monitoring_safe = False
     try:
-        atomic_config('CYBERWATCH_IMAGE=' + candidate + '\n')
-        call(['systemctl', 'start', 'cyberwatch.service'])
-        wait_ready(candidate)
-    except Exception:
+        # The health worker can independently restart the application. Stop the
+        # timer first, then drain any in-flight worker before changing runtime.
+        call(['systemctl', 'stop', 'cyberwatch-health.timer'])
+        call(['systemctl', 'stop', 'cyberwatch-health.service'])
         call(['systemctl', 'stop', 'cyberwatch.service'])
-        # An image rollback is unsafe after an incompatible database migration.
-        # Leave the service stopped and retain the backup for operator recovery.
-        if schema_fingerprint(database) != before:
-            raise RuntimeError('Deployment failed and database schema changed; manual recovery required') from None
-        atomic_config(previous)
-        call(['systemctl', 'start', 'cyberwatch.service'])
-        old_image = previous.strip().split('=', 1)[1]
-        wait_ready(old_image)
-        raise RuntimeError('Deployment failed; previous image restored and healthy') from None
+        try:
+            atomic_config('CYBERWATCH_IMAGE=' + candidate + '\n')
+            call(['systemctl', 'start', 'cyberwatch.service'])
+            wait_ready(candidate)
+        except Exception:
+            call(['systemctl', 'stop', 'cyberwatch.service'])
+            # An image rollback is unsafe after an incompatible database migration.
+            # Leave the service and health monitoring stopped for operator recovery.
+            if schema_fingerprint(database) != before:
+                raise RuntimeError('Deployment failed and database schema changed; manual recovery required') from None
+            atomic_config(previous)
+            # A crashing candidate can exhaust the unit's restart burst while the
+            # readiness loop waits. Clear that counter so it cannot block rollback.
+            call(['systemctl', 'reset-failed', 'cyberwatch.service'])
+            call(['systemctl', 'start', 'cyberwatch.service'])
+            old_image = previous.strip().split('=', 1)[1]
+            wait_ready(old_image)
+            monitoring_safe = True
+            raise RuntimeError('Deployment failed; previous image restored and healthy') from None
+        monitoring_safe = True
+    finally:
+        if monitoring_safe:
+            call(['systemctl', 'start', 'cyberwatch-health.timer'])
 
 
 def main():

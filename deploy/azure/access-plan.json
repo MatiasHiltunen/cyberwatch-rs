@@ -1,0 +1,47 @@
+{
+  "subscriptionId": "afe8ae0d-d866-47a9-bc56-e1f4475e6cc6",
+  "subscriptionName": "LapinAMK-Student-YAMKDevops-SANDBOX",
+  "tenantId": "b8c233ff-e775-47a9-8869-74e44d42fe37",
+  "organization": "https://dev.azure.com/DevOpsYAMKOpenDemo",
+  "project": "DevOpsDemo",
+  "newStagingResources": {
+    "resourceGroup": "rg-cyberwatch-staging-swe",
+    "location": "swedencentral",
+    "vm": "cyberwatch-staging",
+    "size": "Standard_B2pts_v2",
+    "osDiskGiB": 32,
+    "dataDiskGiB": 4,
+    "additionalResources": ["virtual network", "network security group", "network interface", "static public IPv4", "private artifact storage account and container"],
+    "billable": true
+  },
+  "environments": [
+    {
+      "name": "staging",
+      "resourceGroup": "rg-cyberwatch-staging-swe",
+      "applicationIdentity": "id-cyberwatch-ado-staging",
+      "applicationConnection": "cyberwatch-staging-wif",
+      "infrastructureIdentity": "id-cyberwatch-iac-staging",
+      "infrastructureConnection": "cyberwatch-iac-staging-wif"
+    },
+    {
+      "name": "prod",
+      "resourceGroup": "rg-cyberwatch-yamk-swe",
+      "applicationIdentity": "id-cyberwatch-ado-prod",
+      "applicationConnection": "cyberwatch-prod-wif",
+      "infrastructureIdentity": "id-cyberwatch-iac-prod",
+      "infrastructureConnection": "cyberwatch-iac-prod-wif"
+    }
+  ],
+  "applicationRoles": {
+    "Virtual Machine Contributor": "own environment VM only",
+    "Storage Blob Data Contributor": "own environment artifacts container only",
+    "Storage Blob Delegator": "own environment storage account only"
+  },
+  "infrastructureRoles": {
+    "Virtual Machine Contributor": "own environment resource group only",
+    "Network Contributor": "own environment resource group only",
+    "Storage Account Contributor": "own environment resource group only"
+  },
+  "trustBoundary": "VM rights allow Run Command and access to runtime secrets. Storage Account Contributor can retrieve storage keys. Infrastructure roles cannot modify managed identities, federated credentials or RBAC grants.",
+  "pipelineAccess": "Each connection is authorized only for its named application or infrastructure pipeline; production use requires a teacher approval outside YAML. No subscription-wide roles or client secrets."
+}

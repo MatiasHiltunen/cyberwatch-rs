@@ -19,6 +19,14 @@ deployment environment -ympäristöjä. Azure-tilin resurssioikeuksista puuttuu
 `Microsoft.Authorization/roleAssignments/write`; pipeline-identiteettien roolit
 on myönnettävä erikseen siihen oikeutetulla tilillä.
 
+CI:n `verifyReleaseArtifact: true` mahdollistaa ARM64-kuvan rakentamisen ja
+testaamisen työhaarasta ennen yhdistämistä. Se ei julkaise työhaaraa Azureen:
+stagingin julkaisuehto edellyttää edelleen `main`-haaraa. Infrastruktuurin
+ylläpidolle on [oma IaC-putki ja ohje](azure-iac-fi.md). Se käyttää erillisiä
+identiteettejä, jotta sovelluksen julkaisu ei saa oikeutta muuttaa verkkoa tai
+tallennustilin määrityksiä. Kaikkien neljän identiteetin nimet ja oikeusrajat ovat
+[koneellisesti luettavassa käyttöönottosuunnitelmassa](../deploy/azure/access-plan.json).
+
 Automaattinen hyväksyntätarkistus esti managed identityjen, federointien ja
 palveluyhteyksien luomisen ennen erillistä, kohteet ja oikeuksien laajuuden
 nimeävää hyväksyntää. Nykyiseen Azure-sovellukseen ei tehty CI/CD-muutosta.

@@ -9,6 +9,10 @@ trigger:
 pr: none
 
 parameters:
+  - name: verifyReleaseArtifact
+    displayName: Also build and test the ARM64 artifact on this branch
+    type: boolean
+    default: false
   # Keep false until the external environment/connection checks and Azure RBAC
   # have been provisioned. This is a bootstrap switch, not a security boundary.
   - name: enableDeployments
@@ -64,7 +68,7 @@ stages:
 
   - stage: Package
     dependsOn: Validate
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), ${{ eq(parameters.verifyReleaseArtifact, true) }}))
     jobs:
       - job: ARM64
         timeoutInMinutes: 60

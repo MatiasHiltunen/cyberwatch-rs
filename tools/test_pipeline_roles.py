@@ -23,8 +23,9 @@ class RoleScopeTests(unittest.TestCase):
         group, name = args[args.index('-g') + 1], args[args.index('-n') + 1]
         base = '/subscriptions/fixture-subscription/resourceGroups/' + group + '/providers/'
         if args[:2] == ('identity', 'show'):
+            principal_suffix = (1 if group.endswith('staging') else 2) + (2 if '-iac-' in name else 0)
             return {'id': base + 'Microsoft.ManagedIdentity/userAssignedIdentities/' + name,
-                    'principalId': '11111111-1111-1111-1111-' + ('1' if group.endswith('staging') else '2') * 12}
+                    'principalId': '11111111-1111-1111-1111-' + str(principal_suffix) * 12}
         if args[:2] == ('vm', 'show'):
             return {'id': base + 'Microsoft.Compute/virtualMachines/' + name}
         if args[:3] == ('storage', 'account', 'show'):
@@ -46,6 +47,20 @@ class RoleScopeTests(unittest.TestCase):
                 'Storage Blob Data Contributor': base + 'Microsoft.Storage/storageAccounts/storage' + environment
                                                 + '/blobServices/default/containers/artifacts'})
         self.assertNotEqual(entries[0]['principalId'], entries[3]['principalId'])
+
+    def test_iac_roles_are_separate_from_application_identities(self):
+        with patch.object(roles, 'az', side_effect=self.azure):
+            entries = roles.plan(self.targets, 'all')
+        self.assertEqual(len(entries), 12)
+        app_ids = {entry['principalId'] for entry in entries if entry['purpose'] == 'application'}
+        infra_ids = {entry['principalId'] for entry in entries if entry['purpose'] == 'infrastructure'}
+        self.assertFalse(app_ids & infra_ids)
+        for environment in ('staging', 'prod'):
+            own = [entry for entry in entries if entry['purpose'] == 'infrastructure' and entry['environment'] == environment]
+            self.assertEqual({entry['role'] for entry in own},
+                             {'Virtual Machine Contributor', 'Network Contributor', 'Storage Account Contributor'})
+            self.assertEqual({entry['scope'] for entry in own},
+                             {'/subscriptions/fixture-subscription/resourceGroups/rg-' + environment})
 
     def test_an_incomplete_or_misresolved_environment_prevents_a_plan(self):
         self.targets['prod']['storageAccount'] = None

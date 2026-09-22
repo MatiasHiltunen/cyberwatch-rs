@@ -1,0 +1,121 @@
+# Bootstrap is an explicit operator action. This pipeline manages existing resources.
+name: cyberwatch-infra-$(Date:yyyyMMdd).$(Rev:r)
+trigger:
+  batch: true
+  branches:
+    include: [main]
+  paths:
+    include:
+      - deploy/azure/*
+      - tools/ado_infra.py
+      - tools/test_ado_infra.py
+      - azure-infra.yml
+pr: none
+
+parameters:
+  - name: operation
+    displayName: Validate only, Azure what-if, or plan and approved apply
+    type: string
+    default: validate
+    values: [validate, plan, apply]
+  - name: environment
+    type: string
+    default: staging
+    values: [staging, prod]
+
+pool:
+  vmImage: ubuntu-24.04
+
+variables:
+  bicepVersion: v0.43.8
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: InfrastructureChecks
+        timeoutInMinutes: 25
+        steps:
+          - checkout: self
+            clean: true
+            persistCredentials: false
+          - bash: |
+              set -euo pipefail
+              mkdir -p reports
+              python3 -m unittest discover -s tools -p test_ado_infra.py -v
+              az bicep install --version $(bicepVersion)
+              az bicep build --file deploy/azure/main.bicep --outfile reports/bootstrap-template.json
+              az bicep build --file deploy/azure/steady-state.bicep --outfile reports/steady-state-template.json
+              if [[ "$OPERATION" == apply && "$BUILD_SOURCEBRANCH" != refs/heads/main ]]; then
+                echo 'Infrastructure apply requires the protected main branch.' >&2
+                exit 1
+              fi
+            env:
+              OPERATION: ${{ parameters.operation }}
+            displayName: Check IaC safeguards and compile both templates
+          - bash: bash tools/ci_security.sh source
+            displayName: Check infrastructure and source security
+          - publish: reports
+            artifact: infrastructure-validation
+            condition: always()
+
+  - ${{ if ne(parameters.operation, 'validate') }}:
+    - stage: Plan
+      dependsOn: Validate
+      jobs:
+        - job: WhatIf
+          timeoutInMinutes: 25
+          steps:
+            - checkout: self
+              clean: true
+              persistCredentials: false
+            - task: AzureCLI@2
+              inputs:
+                ${{ if eq(parameters.environment, 'staging') }}:
+                  azureSubscription: cyberwatch-iac-staging-wif
+                ${{ else }}:
+                  azureSubscription: cyberwatch-iac-prod-wif
+                scriptType: bash
+                scriptLocation: inlineScript
+                inlineScript: |
+                  set -euo pipefail
+                  az bicep install --version $(bicepVersion)
+                  python3 tools/ado_infra.py plan --environment '${{ parameters.environment }}' --artifact reports/infra-plan
+              displayName: Record exact template, parameters and Azure what-if
+            - publish: reports/infra-plan
+              artifact: infra-plan
+
+  - ${{ if eq(parameters.operation, 'apply') }}:
+    - stage: Apply
+      dependsOn: Plan
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      lockBehavior: sequential
+      jobs:
+        - deployment: Infrastructure
+          timeoutInMinutes: 30
+          # Share the environment lock with application deployments.
+          ${{ if eq(parameters.environment, 'staging') }}:
+            environment: cyberwatch-staging
+          ${{ else }}:
+            environment: cyberwatch-production
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                  - checkout: self
+                    clean: true
+                    persistCredentials: false
+                  - download: current
+                    artifact: infra-plan
+                  - task: AzureCLI@2
+                    inputs:
+                      ${{ if eq(parameters.environment, 'staging') }}:
+                        azureSubscription: cyberwatch-iac-staging-wif
+                      ${{ else }}:
+                        azureSubscription: cyberwatch-iac-prod-wif
+                      scriptType: bash
+                      scriptLocation: inlineScript
+                      inlineScript: |
+                        set -euo pipefail
+                        az bicep install --version $(bicepVersion)
+                        python3 tools/ado_infra.py apply --environment '${{ parameters.environment }}' --artifact '$(Pipeline.Workspace)/infra-plan'
+                    displayName: Recheck drift and apply the reviewed inputs

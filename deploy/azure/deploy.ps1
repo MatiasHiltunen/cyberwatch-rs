@@ -11,6 +11,7 @@ param(
     [string]$ImageArchive = '',
     [string]$ImageConfigId = '',
     [string]$SecretsDir = '',
+    [string]$ReportsDir = '',
     [string]$OrgTags = ''
 )
 $ErrorActionPreference = 'Stop'
@@ -19,6 +20,7 @@ $arguments = @((Join-Path $PSScriptRoot 'deploy.py'), $Action,
     '--location', $Location, '--name-prefix', $NamePrefix, '--dns-label', $DnsLabel,
     '--image', $Image)
 if ($SecretsDir) { $arguments += @('--secrets-dir', $SecretsDir) }
+if ($ReportsDir) { $arguments += @('--reports-dir', $ReportsDir) }
 if ($OrgTags) { $arguments += @('--org-tags', $OrgTags) }
 if ($ImageArchive) { $arguments += @('--image-archive', $ImageArchive) }
 if ($ImageConfigId) { $arguments += @('--image-config-id', $ImageConfigId) }
