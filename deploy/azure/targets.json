@@ -3,7 +3,7 @@
   "staging": {
     "resourceGroup": "rg-cyberwatch-staging-swe",
     "vm": "cyberwatch-staging",
-    "storageAccount": null,
+    "storageAccount": "cywlqgeq7hp4llyw",
     "container": "artifacts",
     "fqdn": "cyberwatch-staging-afe8ae-20260922.swedencentral.cloudapp.azure.com"
   },
