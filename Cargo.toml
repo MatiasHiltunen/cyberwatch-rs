@@ -21,7 +21,7 @@ axum = { version = "0.8", default-features = false, features = ["http1", "json",
 base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
-feed-rs = "=2.3.1"
+feed-rs = "=2.4.0"
 futures = { version = "0.3", default-features = false, features = ["std", "async-await"] }
 hex = "0.4"
 libsql = { version = "0.9.30", default-features = false, features = ["core"] }
